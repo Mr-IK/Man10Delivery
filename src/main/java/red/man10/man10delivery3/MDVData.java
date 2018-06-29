@@ -59,6 +59,9 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            if(Bukkit.getPlayer(destination)!=null){
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+            }
         });
     }
     public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag){
@@ -88,6 +91,9 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            if(Bukkit.getPlayer(destination)!=null){
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+            }
         });
     }
 
@@ -102,6 +108,10 @@ public class MDVData {
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
             ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
             try {
                 if (rs.next()) {
                     String result = rs.getString("box");
@@ -129,6 +139,7 @@ public class MDVData {
             if (rs == null) {
                 mysql.close();
                 p.sendMessage(plugin.prefix + "§e荷物はありませんでした。");
+                return;
             }
             try {
                 while (rs.next()) {
@@ -156,6 +167,7 @@ public class MDVData {
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
                 mysql.close();
+                return;
             }
             try {
                 while (rs.next()) {
@@ -186,6 +198,7 @@ public class MDVData {
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
                 mysql.close();
+                return;
             }
             try {
                 if (rs.next()) {

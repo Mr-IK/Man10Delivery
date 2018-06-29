@@ -1,4 +1,4 @@
-package red.man10.man10delivery3;
+package red.man10.man10delivery;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -99,7 +99,7 @@ public class MDVData {
 
     public static void Gettrue(UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            String sql = "UPDATE boxs SET get=true WHERE tag = '" + tag.toString() + "';";
+            String sql = "UPDATE boxs SET gets = true WHERE tag = '" + tag.toString() + "';";
             mysql.execute(sql);
         });
     }
@@ -134,7 +134,7 @@ public class MDVData {
             p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
             int kensuu = 0;
             UUID uuid = p.getUniqueId();
-            String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "',gets = " + false + ";";
+            String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "' AND gets = " + false + ";";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
                 mysql.close();
@@ -143,6 +143,12 @@ public class MDVData {
             }
             try {
                 while (rs.next()) {
+                    if (p.getInventory().firstEmpty() == -1) {
+                        p.sendMessage(plugin.prefix + "§cインベントリがいっぱいになったので中止しました。");
+                        mysql.close();
+                        p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の荷物を受け取りました。");
+                        return;
+                    }
                     kensuu++;
                     UUID tag = UUID.fromString(rs.getString("tag"));
                     GetBox(p, tag);

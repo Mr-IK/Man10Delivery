@@ -1,4 +1,4 @@
-package red.man10.man10delivery3;
+package red.man10.man10delivery;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;

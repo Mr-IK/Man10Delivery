@@ -1,4 +1,4 @@
-package red.man10.man10delivery3;
+package red.man10.man10delivery;
 /**
  * Created by takatronix on 2017/03/05.
  */

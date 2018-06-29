@@ -1,8 +1,9 @@
-package red.man10.man10delivery3;
+package red.man10.man10delivery;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -104,6 +105,7 @@ public class MDVEvent implements Listener {
                         p.getInventory().setItemInMainHand(null);
                         MDVData.getItem(p,MDVData.getitems.get(items));
                         p.sendMessage(plugin.prefix + "§a段ボールを開けました。");
+                        p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN ,1.0F,1.0F);
                     }
                 }
             }

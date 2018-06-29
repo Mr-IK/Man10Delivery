@@ -1,6 +1,6 @@
 name: Man10Delivery
 version: ${project.version}
-main: red.man10.man10delivery3.Man10Delivery
+main: red.man10.man10delivery.Man10Delivery
 authors: [Mr_IK]
 description: Man10 Delivery API plugin
 commands:

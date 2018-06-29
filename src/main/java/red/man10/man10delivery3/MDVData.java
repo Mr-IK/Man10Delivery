@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -32,103 +33,117 @@ public class MDVData {
     }
 
     public static void addBox(UUID sender, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag){
-        if(itemlist.size() > 9||itemlist.size()==0){
-            return;
-        }
-        String boxs = itemToBase64(box);
-        String tags = tag.toString();
-        String[] list = new String[9];
-        int count = 0;
-        for(ItemStack i:itemlist){
-            list[count] = itemToBase64(i);
-            count++;
-        }
-        String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('"+sender.toString()+"','"+destination.toString()+"'" +
-                ",'"+tags+"'" +
-                ",false" +
-                ",'"+boxs+"'" +
-                ",'"+list[0]+"'" +
-                ",'"+list[1]+"'" +
-                ",'"+list[2]+"'" +
-                ",'"+list[3]+"'" +
-                ",'"+list[4]+"'" +
-                ",'"+list[5]+"'" +
-                ",'"+list[6]+"'" +
-                ",'"+list[7]+"'" +
-                ",'"+list[8]+"' );";
-        mysql.execute(sql);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            if (itemlist.size() > 9 || itemlist.size() == 0) {
+                return;
+            }
+            String boxs = itemToBase64(box);
+            String tags = tag.toString();
+            String[] list = new String[9];
+            int count = 0;
+            for (ItemStack i : itemlist) {
+                list[count] = itemToBase64(i);
+                count++;
+            }
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sender.toString() + "','" + destination.toString() + "'" +
+                    ",'" + tags + "'" +
+                    ",false" +
+                    ",'" + boxs + "'" +
+                    ",'" + list[0] + "'" +
+                    ",'" + list[1] + "'" +
+                    ",'" + list[2] + "'" +
+                    ",'" + list[3] + "'" +
+                    ",'" + list[4] + "'" +
+                    ",'" + list[5] + "'" +
+                    ",'" + list[6] + "'" +
+                    ",'" + list[7] + "'" +
+                    ",'" + list[8] + "' );";
+            mysql.execute(sql);
+        });
     }
     public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag){
-        if(itemlist.size() > 9||itemlist.size()==0){
-            return;
-        }
-        String boxs = itemToBase64(box);
-        String tags = tag.toString();
-        String[] list = new String[9];
-        int count = 0;
-        for(ItemStack i:itemlist){
-            list[count] = itemToBase64(i);
-            count++;
-        }
-        String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('"+sendername+"','"+destination.toString()+"'" +
-                ",'"+tags+"'" +
-                ",false" +
-                ",'"+boxs+"'" +
-                ",'"+list[0]+"'" +
-                ",'"+list[1]+"'" +
-                ",'"+list[2]+"'" +
-                ",'"+list[3]+"'" +
-                ",'"+list[4]+"'" +
-                ",'"+list[5]+"'" +
-                ",'"+list[6]+"'" +
-                ",'"+list[7]+"'" +
-                ",'"+list[8]+"' );";
-        mysql.execute(sql);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            if (itemlist.size() > 9 || itemlist.size() == 0) {
+                return;
+            }
+            String boxs = itemToBase64(box);
+            String tags = tag.toString();
+            String[] list = new String[9];
+            int count = 0;
+            for (ItemStack i : itemlist) {
+                list[count] = itemToBase64(i);
+                count++;
+            }
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sendername + "','" + destination.toString() + "'" +
+                    ",'" + tags + "'" +
+                    ",false" +
+                    ",'" + boxs + "'" +
+                    ",'" + list[0] + "'" +
+                    ",'" + list[1] + "'" +
+                    ",'" + list[2] + "'" +
+                    ",'" + list[3] + "'" +
+                    ",'" + list[4] + "'" +
+                    ",'" + list[5] + "'" +
+                    ",'" + list[6] + "'" +
+                    ",'" + list[7] + "'" +
+                    ",'" + list[8] + "' );";
+            mysql.execute(sql);
+        });
     }
 
     public static void Gettrue(UUID tag){
-        String sql = "UPDATE boxs SET get=true WHERE tag = '"+tag.toString()+"';";
-        mysql.execute(sql);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "UPDATE boxs SET get=true WHERE tag = '" + tag.toString() + "';";
+            mysql.execute(sql);
+        });
     }
 
     public static void GetBox(Player destination,UUID tag){
-        String sql = "SELECT * FROM boxs WHERE tag = '"+tag.toString()+"';";
-        ResultSet rs = mysql.query(sql);
-        try {
-            if(rs.next()) {
-                String result = rs.getString("box");
-                ItemStack box = itemFromBase64(result);
-                destination.getInventory().addItem(box);
-                Gettrue(tag);
-                loadBox(box,tag);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            try {
+                if (rs.next()) {
+                    String result = rs.getString("box");
+                    ItemStack box = itemFromBase64(result);
+                    destination.getInventory().addItem(box);
+                    Gettrue(tag);
+                    loadBox(box, tag);
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
             }
-            rs.close();
-        } catch (NullPointerException | SQLException e1) {
-            e1.printStackTrace();
-            return;
-        }
-        mysql.close();
+            mysql.close();
+        });
     }
 
     public static void GetPlayerBox(Player p){
-        p.sendMessage(plugin.prefix+"§eセンターに問合せ中です…§6§kaa");
-        int kensuu = 0;
-        UUID uuid = p.getUniqueId();
-        String sql = "SELECT * FROM boxs WHERE uuid = '"+uuid.toString()+"',gets = "+false+";";
-        ResultSet rs = mysql.query(sql);
-        try {
-            while(rs.next()) {
-                kensuu++;
-                UUID tag = UUID.fromString(rs.getString("tag"));
-                GetBox(p,tag);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
+            int kensuu = 0;
+            UUID uuid = p.getUniqueId();
+            String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "',gets = " + false + ";";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                p.sendMessage(plugin.prefix + "§e荷物はありませんでした。");
             }
-            rs.close();
-        } catch (NullPointerException | SQLException e1) {
-            e1.printStackTrace();
-            return;
-        }
-        mysql.close();
-        p.sendMessage(plugin.prefix+"§e"+kensuu+"§6個の荷物を受け取りました。");
+            try {
+                while (rs.next()) {
+                    kensuu++;
+                    UUID tag = UUID.fromString(rs.getString("tag"));
+                    GetBox(p, tag);
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+            p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の荷物を受け取りました。");
+        });
     }
 
     public static void loadBox(ItemStack item,UUID tag){
@@ -136,23 +151,28 @@ public class MDVData {
     }
 
     public static void AllloadBox(){
-        String sql = "SELECT * FROM boxs WHERE gets = "+true+";";
-        ResultSet rs = mysql.query(sql);
-        try {
-            while(rs.next()) {
-                String result = rs.getString("box");
-                ItemStack box = itemFromBase64(result);
-                unloadBox(box);
-                String tags = rs.getString("tag");
-                UUID tag = UUID.fromString(tags);
-                loadBox(box,tag);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE gets = " + true + ";";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
             }
-            rs.close();
-        } catch (NullPointerException | SQLException e1) {
-            e1.printStackTrace();
-            return;
-        }
-        mysql.close();
+            try {
+                while (rs.next()) {
+                    String result = rs.getString("box");
+                    ItemStack box = itemFromBase64(result);
+                    unloadBox(box);
+                    String tags = rs.getString("tag");
+                    UUID tag = UUID.fromString(tags);
+                    loadBox(box, tag);
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
     }
 
 
@@ -161,65 +181,72 @@ public class MDVData {
     }
 
     public static void getItem(Player p,UUID tag){
-        String sql = "SELECT * FROM boxs WHERE tag = '"+tag.toString()+"';";
-        ResultSet rs = mysql.query(sql);
-        try {
-            if(rs.next()) {
-                boolean get = rs.getBoolean("gets");
-                if(get) {
-                    String result = rs.getString("box");
-                    ItemStack box = itemFromBase64(result);
-                    unloadBox(box);
-                    //one item
-                    String result1 = rs.getString("one");
-                    ItemStack item1 = itemFromBase64(result1);
-                    p.getInventory().addItem(item1);
-                    //two item
-                    String result2 = rs.getString("two");
-                    ItemStack item2 = itemFromBase64(result2);
-                    p.getInventory().addItem(item2);
-                    //three item
-                    String result3 = rs.getString("three");
-                    ItemStack item3 = itemFromBase64(result3);
-                    p.getInventory().addItem(item3);
-                    //four item
-                    String result4 = rs.getString("four");
-                    ItemStack item4 = itemFromBase64(result4);
-                    p.getInventory().addItem(item4);
-                    //five item
-                    String result5 = rs.getString("five");
-                    ItemStack item5 = itemFromBase64(result5);
-                    p.getInventory().addItem(item5);
-                    //six item
-                    String result6 = rs.getString("six");
-                    ItemStack item6 = itemFromBase64(result6);
-                    p.getInventory().addItem(item6);
-                    //seven item
-                    String result7 = rs.getString("seven");
-                    ItemStack item7 = itemFromBase64(result7);
-                    p.getInventory().addItem(item7);
-                    //eight item
-                    String result8 = rs.getString("eight");
-                    ItemStack item8 = itemFromBase64(result8);
-                    p.getInventory().addItem(item8);
-                    //nine item
-                    String result9 = rs.getString("nine");
-                    ItemStack item9 = itemFromBase64(result9);
-                    p.getInventory().addItem(item9);
-                    removeBox(tag);
-                }
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
             }
-            rs.close();
-        } catch (NullPointerException | SQLException e1) {
-            e1.printStackTrace();
-            return;
-        }
-        mysql.close();
+            try {
+                if (rs.next()) {
+                    boolean get = rs.getBoolean("gets");
+                    if (get) {
+                        String result = rs.getString("box");
+                        ItemStack box = itemFromBase64(result);
+                        unloadBox(box);
+                        //one item
+                        String result1 = rs.getString("one");
+                        ItemStack item1 = itemFromBase64(result1);
+                        p.getInventory().addItem(item1);
+                        //two item
+                        String result2 = rs.getString("two");
+                        ItemStack item2 = itemFromBase64(result2);
+                        p.getInventory().addItem(item2);
+                        //three item
+                        String result3 = rs.getString("three");
+                        ItemStack item3 = itemFromBase64(result3);
+                        p.getInventory().addItem(item3);
+                        //four item
+                        String result4 = rs.getString("four");
+                        ItemStack item4 = itemFromBase64(result4);
+                        p.getInventory().addItem(item4);
+                        //five item
+                        String result5 = rs.getString("five");
+                        ItemStack item5 = itemFromBase64(result5);
+                        p.getInventory().addItem(item5);
+                        //six item
+                        String result6 = rs.getString("six");
+                        ItemStack item6 = itemFromBase64(result6);
+                        p.getInventory().addItem(item6);
+                        //seven item
+                        String result7 = rs.getString("seven");
+                        ItemStack item7 = itemFromBase64(result7);
+                        p.getInventory().addItem(item7);
+                        //eight item
+                        String result8 = rs.getString("eight");
+                        ItemStack item8 = itemFromBase64(result8);
+                        p.getInventory().addItem(item8);
+                        //nine item
+                        String result9 = rs.getString("nine");
+                        ItemStack item9 = itemFromBase64(result9);
+                        p.getInventory().addItem(item9);
+                        removeBox(tag);
+                    }
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
     }
 
     public static void removeBox(UUID tag){
-        String sql = "DELETE FROM boxs WHERE tag = '"+tag.toString()+"';";
-        mysql.execute(sql);
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "DELETE FROM boxs WHERE tag = '" + tag.toString() + "';";
+            mysql.execute(sql);
+        });
     }
 
     public static ItemStack itemFromBase64(String data) {

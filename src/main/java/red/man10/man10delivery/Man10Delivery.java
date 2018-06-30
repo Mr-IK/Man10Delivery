@@ -15,6 +15,8 @@ public final class Man10Delivery extends JavaPlugin {
     FileConfiguration config;
     HashMap<UUID,UUID> pstats = new HashMap<>();
 
+    boolean power = true;
+
     int fee = -1;
     @Override
     public void onEnable() {

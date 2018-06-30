@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class MDVAPI {
-    public static void sendPlayertoBox(String sendername, UUID Destination , ArrayList<ItemStack> list,ItemStack box,UUID tag){
-        MDVData.addBox(sendername,Destination,list,box,tag);
+    public static void sendPlayertoBox(String sendername, UUID Destination , ArrayList<ItemStack> list,UUID tag){
+        MDVData.addBox(sendername,Destination,list,tag);
     }
 }

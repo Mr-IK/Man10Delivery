@@ -5,8 +5,12 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -15,9 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class MDVData {
     private static MySQLManager mysql;
@@ -64,12 +67,35 @@ public class MDVData {
             }
         });
     }
-    public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag){
+    public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             if (itemlist.size() > 9 || itemlist.size() == 0) {
                 return;
             }
-            String boxs = itemToBase64(box);
+            ItemStack items = new ItemStack(Material.DIAMOND_HOE,1,(short)48);
+            ItemMeta itemmeta = items.getItemMeta();
+            itemmeta.setDisplayName("§2§l[§f段ボール§6箱§2§l]§7(右クリック)§r");
+            List<String> k = new ArrayList<String>();
+            k.add("§6送り主: §f"+sendername);
+            String name = null;
+            if(Bukkit.getPlayer(destination)==null) {
+                OfflinePlayer pp = Bukkit.getOfflinePlayer(destination);
+                name = pp.getName();
+            }else {
+                Player pp = Bukkit.getPlayer(destination);
+                name = pp.getName();
+            }
+            k.add("§e届け先: §f"+name);
+            Calendar c = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 E曜日 a H時mm分ss秒");
+            k.add("§a配達日時: §f"+sdf.format(c.getTime()));
+            k.add("§c注: インベントリに空きが");
+            k.add("§cあるときにクリックしてください!");
+            itemmeta.setLore(k);
+            itemmeta.setUnbreakable(true);
+            itemmeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+            items.setItemMeta(itemmeta);
+            String boxs = itemToBase64(items);
             String tags = tag.toString();
             String[] list = new String[9];
             int count = 0;
@@ -160,6 +186,54 @@ public class MDVData {
             }
             mysql.close();
             p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の荷物を受け取りました。");
+        });
+    }
+
+    public static void GetPlayerInfo(Player p,UUID uuid){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
+            int kensuu = 0;
+            String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                p.sendMessage(plugin.prefix + "§e受取記録はありませんでした。");
+                return;
+            }else {
+                try {
+                    while (rs.next()) {
+                        kensuu++;
+                        p.sendMessage(plugin.prefix+"§c記録"+kensuu+": 受取 ["+rs.getString("tag")+"] 受け取り済み: "+rs.getBoolean("gets"));
+                    }
+                    rs.close();
+                } catch (NullPointerException | SQLException e1) {
+                    e1.printStackTrace();
+                    return;
+                }
+                mysql.close();
+            }
+            p.sendMessage(plugin.prefix + "§e受取履歴の確認完了。 送信履歴を検索中…");
+            String sqls = "SELECT * FROM boxs WHERE sender = '" + uuid.toString() + "';";
+            ResultSet rss = mysql.query(sqls);
+            if (rss == null) {
+                mysql.close();
+                p.sendMessage(plugin.prefix + "§e送信記録はありませんでした。");
+                p.sendMessage(plugin.prefix + "§e合計" + kensuu + "§6個の記録を発見しました。");
+                return;
+            }
+            try {
+                while (rss.next()) {
+                    kensuu++;
+                    p.sendMessage(plugin.prefix+"§c記録"+kensuu+": 送信["+rss.getString("tag")+"] 受け取り済み: "+rss.getBoolean("gets"));
+                }
+                rss.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+            p.sendMessage(plugin.prefix + "§e送信履歴の確認完了。");
+            p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の記録を発見しました。");
         });
     }
 

@@ -9,4 +9,8 @@ public class MDVAPI {
     public static void sendPlayertoBox(String sendername, UUID Destination , ArrayList<ItemStack> list,UUID tag){
         MDVData.addBox(sendername,Destination,list,tag);
     }
+
+    public static void sendPlayertoBox(String sendername, UUID Destination , ArrayList<ItemStack> list,UUID tag,double daibiki){
+        MDVData.addBox(sendername,Destination,list,tag,daibiki);
+    }
 }

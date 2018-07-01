@@ -5,7 +5,7 @@ Mr_IKからもらったファイルをもらいlibsに入れ pom.xmlにこれを
     <artifactId>red.man10</artifactId>
     <groupId>Man10Delivery</groupId>
     <scope>system</scope>
-    <version>3.1</version>
+    <version>3.2</version>
     <systemPath>${basedir}/libs/Man10Delivery.jar</systemPath>
 </dependency>
 ===================================================================
@@ -13,3 +13,5 @@ Mr_IKからもらったファイルをもらいlibsに入れ pom.xmlにこれを
 『import red.man10.man10delivery.MDVAPI;』
 以下のように使用してください。
 ((MDVAPI.sendPlayertoBox("送り主名",送信先のプレイヤーUUID,ArrayList<ItemStack>, 重複しないUUID);))
+代引使用の場合
+((MDVAPI.sendPlayertoBox("送り主名",送信先のプレイヤーUUID,ArrayList<ItemStack>, 重複しないUUID, 代引料金);))

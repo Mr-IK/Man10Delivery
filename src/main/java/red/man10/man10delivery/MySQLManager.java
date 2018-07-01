@@ -50,6 +50,8 @@ public class MySQLManager {
                 "uuid varchar(40)," +
                 "tag varchar(40)," +
                 "gets boolean," +
+                "cod boolean," +
+                "codbal double," +
                 "box text," +
                 "one text," +
                 "two text," +
@@ -60,6 +62,11 @@ public class MySQLManager {
                 "seven text," +
                 "eight text," +
                 "nine text" +
+                ");");
+        execute("create table if not exists users(" +
+                "id int auto_increment not null primary key," +
+                "uuid varchar(40)," +
+                "offline_bal double" +
                 ");");
     }
 

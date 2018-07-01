@@ -14,6 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import red.man10.man10vaultapiplus.JPYBalanceFormat;
 import red.man10.man10vaultapiplus.enums.TransactionCategory;
 import red.man10.man10vaultapiplus.enums.TransactionType;
 
@@ -72,15 +73,22 @@ public class MDVEvent implements Listener {
             Calendar c = Calendar.getInstance();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 E曜日 a H時mm分ss秒");
             k.add("§a配達日時: §f"+sdf.format(c.getTime()));
+            if(plugin.pstats2.containsKey(p.getUniqueId())) {
+                k.add("§e代引: §f"+new JPYBalanceFormat(plugin.pstats2.get(p.getUniqueId())).getString()+"円");
+            }
             k.add("§c注: インベントリに空きが");
             k.add("§cあるときにクリックしてください!");
             itemmeta.setLore(k);
             itemmeta.setUnbreakable(true);
             itemmeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
             items.setItemMeta(itemmeta);
-            MDVData.addBox(p.getUniqueId(),plugin.pstats.get(p.getUniqueId()),list,items,UUID.randomUUID());
+            if(plugin.pstats2.containsKey(p.getUniqueId())) {
+                MDVData.addBox(p.getUniqueId(), plugin.pstats.get(p.getUniqueId()), list, items, UUID.randomUUID(), plugin.pstats2.get(p.getUniqueId()));
+            }else{
+                MDVData.addBox(p.getUniqueId(), plugin.pstats.get(p.getUniqueId()), list, items, UUID.randomUUID());
+            }
             plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(),plugin.fee,TransactionCategory.TAX,TransactionType.FEE,"mdv fee");
-            p.sendMessage(plugin.prefix+"§e$"+plugin.fee+"§a支払い配送しました。");
+            p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(plugin.fee).getString()+"§a円支払い配送しました。");
             plugin.pstats.remove(p.getUniqueId());
         }
 
@@ -103,9 +111,7 @@ public class MDVEvent implements Listener {
                             return;
                         }
                         p.getInventory().setItemInMainHand(null);
-                        MDVData.getItem(p,MDVData.getitems.get(items));
-                        p.sendMessage(plugin.prefix + "§a段ボールを開けました。");
-                        p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN ,1.0F,1.0F);
+                        MDVData.getItemCheck(p,MDVData.getitems.get(items));
                     }
                 }
             }

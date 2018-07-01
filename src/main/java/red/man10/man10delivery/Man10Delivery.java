@@ -13,7 +13,9 @@ public final class Man10Delivery extends JavaPlugin {
     Man10VaultAPI vault;
     MySQLManager mysql;
     FileConfiguration config;
+    MDVEvent event;
     HashMap<UUID,UUID> pstats = new HashMap<>();
+    HashMap<UUID,Double> pstats2 = new HashMap<>();
 
     boolean power = true;
 
@@ -28,7 +30,8 @@ public final class Man10Delivery extends JavaPlugin {
         mysql = new MySQLManager(this,"Man10Delivery");
         MDVData.loadEnable(this,mysql);
         getCommand("mdv").setExecutor(new MDVCommand(this));
-        getServer().getPluginManager().registerEvents(new MDVEvent(this), this);
+        event = new MDVEvent(this);
+        getServer().getPluginManager().registerEvents(event, this);
     }
 
     @Override

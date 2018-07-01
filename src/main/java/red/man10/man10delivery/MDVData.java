@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -14,6 +15,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
+import red.man10.man10vaultapiplus.JPYBalanceFormat;
+import red.man10.man10vaultapiplus.enums.TransactionType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,9 +51,11 @@ public class MDVData {
                 list[count] = itemToBase64(i);
                 count++;
             }
-            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sender.toString() + "','" + destination.toString() + "'" +
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,cod,codbal,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sender.toString() + "','" + destination.toString() + "'" +
                     ",'" + tags + "'" +
                     ",false" +
+                    ",false" +
+                    ",0" +
                     ",'" + boxs + "'" +
                     ",'" + list[0] + "'" +
                     ",'" + list[1] + "'" +
@@ -67,6 +72,41 @@ public class MDVData {
             }
         });
     }
+    public static void addBox(UUID sender, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag,Double cash){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            if (itemlist.size() > 9 || itemlist.size() == 0) {
+                return;
+            }
+            String boxs = itemToBase64(box);
+            String tags = tag.toString();
+            String[] list = new String[9];
+            int count = 0;
+            for (ItemStack i : itemlist) {
+                list[count] = itemToBase64(i);
+                count++;
+            }
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,cod,codbal,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sender.toString() + "','" + destination.toString() + "'" +
+                    ",'" + tags + "'" +
+                    ",false" +
+                    ",true" +
+                    ","+cash+"" +
+                    ",'" + boxs + "'" +
+                    ",'" + list[0] + "'" +
+                    ",'" + list[1] + "'" +
+                    ",'" + list[2] + "'" +
+                    ",'" + list[3] + "'" +
+                    ",'" + list[4] + "'" +
+                    ",'" + list[5] + "'" +
+                    ",'" + list[6] + "'" +
+                    ",'" + list[7] + "'" +
+                    ",'" + list[8] + "' );";
+            mysql.execute(sql);
+            if(Bukkit.getPlayer(destination)!=null){
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+            }
+        });
+    }
+
     public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             if (itemlist.size() > 9 || itemlist.size() == 0) {
@@ -103,9 +143,70 @@ public class MDVData {
                 list[count] = itemToBase64(i);
                 count++;
             }
-            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sendername + "','" + destination.toString() + "'" +
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,cod,codbal,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sendername + "','" + destination.toString() + "'" +
                     ",'" + tags + "'" +
                     ",false" +
+                    ",false" +
+                    ",0" +
+                    ",'" + boxs + "'" +
+                    ",'" + list[0] + "'" +
+                    ",'" + list[1] + "'" +
+                    ",'" + list[2] + "'" +
+                    ",'" + list[3] + "'" +
+                    ",'" + list[4] + "'" +
+                    ",'" + list[5] + "'" +
+                    ",'" + list[6] + "'" +
+                    ",'" + list[7] + "'" +
+                    ",'" + list[8] + "' );";
+            mysql.execute(sql);
+            if(Bukkit.getPlayer(destination)!=null){
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+            }
+        });
+    }
+
+    public static void addBox(String sendername, UUID destination, ArrayList<ItemStack> itemlist,UUID tag, double daibiki){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            if (itemlist.size() > 9 || itemlist.size() == 0) {
+                return;
+            }
+            ItemStack items = new ItemStack(Material.DIAMOND_HOE,1,(short)48);
+            ItemMeta itemmeta = items.getItemMeta();
+            itemmeta.setDisplayName("§2§l[§f段ボール§6箱§2§l]§7(右クリック)§r");
+            List<String> k = new ArrayList<String>();
+            k.add("§6送り主: §f"+sendername);
+            String name = null;
+            if(Bukkit.getPlayer(destination)==null) {
+                OfflinePlayer pp = Bukkit.getOfflinePlayer(destination);
+                name = pp.getName();
+            }else {
+                Player pp = Bukkit.getPlayer(destination);
+                name = pp.getName();
+            }
+            k.add("§e届け先: §f"+name);
+            Calendar c = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 E曜日 a H時mm分ss秒");
+            k.add("§a配達日時: §f"+sdf.format(c.getTime()));
+            k.add("§e代引: "+ new JPYBalanceFormat(daibiki).getString()+"円");
+            k.add("§c注: インベントリに空きが");
+            k.add("§cあるときにクリックしてください!");
+            itemmeta.setLore(k);
+            itemmeta.setUnbreakable(true);
+            itemmeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+            items.setItemMeta(itemmeta);
+            String boxs = itemToBase64(items);
+            String tags = tag.toString();
+            String[] list = new String[9];
+            int count = 0;
+            for (ItemStack i : itemlist) {
+                list[count] = itemToBase64(i);
+                count++;
+            }
+            String sql = "INSERT INTO boxs (sender,uuid,tag,gets,cod,codbal,box,one,two,three,four,five,six,seven,eight,nine) VALUES ('" + sendername + "','" + destination.toString() + "'" +
+                    ",'" + tags + "'" +
+                    ",false" +
+                    ",true" +
+                    ","+daibiki+"" +
                     ",'" + boxs + "'" +
                     ",'" + list[0] + "'" +
                     ",'" + list[1] + "'" +
@@ -272,6 +373,70 @@ public class MDVData {
         getitems.remove(item);
     }
 
+    public static void getItemCheck(Player p,UUID tag){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    boolean cod = rs.getBoolean("cod");
+                    if(cod){
+                        sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(段ボールを持ちクリック!)","§cクリックで支払い!","/mdv unlock");
+                        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_FALL ,1.0F,1.0F);
+                    }else{
+                        getItem(p,tag);
+                    }
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+    public static void unLockBox(Player p,UUID tag){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    boolean cod = rs.getBoolean("cod");
+                    if(cod){
+                        double codbal = rs.getDouble("codbal");
+                        UUID uuid = UUID.fromString(rs.getString("sender"));
+                        if(codbal > plugin.vault.getBalance(p.getUniqueId())){
+                            p.sendMessage("§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
+                            return;
+                        }
+                        plugin.vault.takePlayerMoney(p.getUniqueId(),codbal,TransactionType.UNKNOWN,"mdv cod takemoney");
+                        addOfflineBal(uuid,codbal);
+                        String sqls = "UPDATE boxs SET cod = false where tag = '"+tag.toString()+"';";
+                        mysql.execute(sqls);
+                        p.sendMessage("§a§l代引を行いました。§f§l(段ボールを右クリックで開きます。)");
+                    }else{
+                        p.sendMessage("§a§lそのボックスは代引ではありません");
+                    }
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+
     public static void getItem(Player p,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
@@ -324,6 +489,8 @@ public class MDVData {
                         ItemStack item9 = itemFromBase64(result9);
                         p.getInventory().addItem(item9);
                         removeBox(tag);
+                        p.sendMessage(plugin.prefix + "§a段ボールを開けました。");
+                        p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN ,1.0F,1.0F);
                     }
                 }
                 rs.close();
@@ -341,6 +508,116 @@ public class MDVData {
             mysql.execute(sql);
         });
     }
+
+    public static void createUser(UUID uuid){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    mysql.close();
+                    rs.close();
+                    String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',0.0);";
+                    mysql.execute(sqls);
+                    return;
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+    public static void createUser(UUID uuid,double bal){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    mysql.close();
+                    rs.close();
+                    String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',"+bal+");";
+                    mysql.execute(sqls);
+                    return;
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+    public static void addOfflineBal(UUID uuid,double bal){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+                String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+                ResultSet rs = mysql.query(sql);
+                if (rs == null) {
+                    mysql.close();
+                    return;
+                }
+                try {
+                    if (rs.next()) {
+                        String sqls = "UPDATE users SET bal = bal+"+bal+" where uuid = '"+uuid.toString()+"';";
+                        mysql.execute(sqls);
+                    }else {
+                        createUser(uuid,bal);
+                    }
+                    rs.close();
+                } catch (NullPointerException | SQLException e1) {
+                    e1.printStackTrace();
+                    return;
+                }
+                mysql.close();
+            });
+
+        });
+    }
+
+    public static void getOfflineBal(Player p){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM users WHERE uuid = '" + p.getUniqueId().toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    double addbal = rs.getDouble("offline_bal");
+                    String sqls = "UPDATE users SET bal = 0.0 where uuid = '"+p.getUniqueId().toString()+"';";
+                    mysql.execute(sqls);
+                    MDVData.plugin.vault.givePlayerMoney(p.getUniqueId(),addbal,TransactionType.UNKNOWN,"mdv get cash");
+                    p.sendMessage(plugin.prefix+"§e§l"+new JPYBalanceFormat(addbal).getString() +"円 引き出されました。");
+                }else {
+                    createUser(p.getUniqueId());
+                    p.sendMessage(plugin.prefix+"§e§l0円 引き出されました。");
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+
+
+
+
 
     public static ItemStack itemFromBase64(String data) {
         try {

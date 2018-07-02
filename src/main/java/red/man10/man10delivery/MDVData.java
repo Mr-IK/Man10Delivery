@@ -491,7 +491,7 @@ public class MDVData {
                         if(item6 != null) {
                             p.getInventory().addItem(item6);
                         }
-                        //seven item
+                        //seven iteme
                         String result7 = rs.getString("seven");
                         ItemStack item7 = itemFromBase64(result7);
                         if(item7 != null) {

@@ -38,8 +38,8 @@ public class MDVCommand implements CommandExecutor {
             MDVData.sendHoverText(p, "§e§l/mdv unlock §f§l: 代引のロックを解除する", "§a段ボールを持ちクリックで解除", "/mdv unlock");
             MDVData.sendHoverText(p, "§e§l/mdv cash §f§l: 代引金額を受け取る", "§aクリックで受け取る", "/mdv cash");
             if(p.hasPermission("mdv.op")){
-                MDVData.sendHoverText(p, "§c§l/mdv on §f§l: このプラグインを起動する", "§a§l§nクリックで起動します!!確認してください！!", "/mdv on");
-                MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください！!", "/mdv off");
+                MDVData.sendHoverText(p, "§c§l/mdv on §f§l: このプラグインを起動する", "§a§l§nクリックで起動します!!確認してください!!", "/mdv on");
+                MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください!!", "/mdv off");
                 MDVData.sendSuggestCommand(p, "§c§l/mdv info [player名] §f§l: 該当プレイヤーの記録をチェックする", "§aクリックでチャットに打ち込む", "/mdv info ");
                 p.sendMessage("§cv3.2");
             }
@@ -47,7 +47,13 @@ public class MDVCommand implements CommandExecutor {
             return true;
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("check")) {
+                if(MDVData.containSQLWait(p)){
+                    p.sendMessage(plugin.prefix + "§c処理中です。お待ちください。");
+                    return true;
+                }
+                MDVData.addSQLWait(p);
                 MDVData.GetPlayerBox(p);
+                MDVData.removeSQLWait(p);
                 return true;
             }else if (args[0].equalsIgnoreCase("unlock")) {
                 if(p.getInventory().getItemInMainHand().getAmount()==0){
@@ -55,7 +61,7 @@ public class MDVCommand implements CommandExecutor {
                     return true;
                 }
                 ItemStack item = p.getInventory().getItemInMainHand();
-                if(MDVData.getitems.containsKey(item)){
+                if(!MDVData.getitems.containsKey(item)){
                     p.sendMessage(plugin.prefix + "§c段ボールを持ってください。");
                     return true;
                 }
@@ -63,23 +69,31 @@ public class MDVCommand implements CommandExecutor {
                 MDVData.unLockBox(p,tag);
                 return true;
             }else if (args[0].equalsIgnoreCase("cash")) {
+                if(MDVData.containSQLWait(p)){
+                    p.sendMessage(plugin.prefix + "§c処理中です。お待ちください。");
+                    return true;
+                }
+                MDVData.addSQLWait(p);
                 MDVData.getOfflineBal(p);
+                MDVData.removeSQLWait(p);
                 return true;
             }else if (args[0].equalsIgnoreCase("on")) {
                 if(!p.hasPermission("mdv.op")){
                     p.sendMessage(plugin.prefix + "§cあなたには権限がありません！");
                     return true;
                 }
+                Bukkit.broadcastMessage(plugin.prefix+"§7§lヤマントの§a§l営業を再開中…");
                 plugin.power = true;
-                p.sendMessage(plugin.prefix + "§a起動完了。");
+                Bukkit.broadcastMessage(plugin.prefix+"§a§l再開完了。");
                 return true;
             }else if (args[0].equalsIgnoreCase("off")) {
                 if(!p.hasPermission("mdv.op")){
                     p.sendMessage(plugin.prefix + "§cあなたには権限がありません！");
                     return true;
                 }
+                Bukkit.broadcastMessage(plugin.prefix+"§7§lヤマントの§c§l営業を停止中…");
                 plugin.power = false;
-                p.sendMessage(plugin.prefix + "§a停止完了。");
+                Bukkit.broadcastMessage(plugin.prefix+"§7§l停止完了。");
                 return true;
             }
             if(Bukkit.getPlayer(args[0])==null) {
@@ -179,8 +193,8 @@ public class MDVCommand implements CommandExecutor {
         MDVData.sendHoverText(p, "§e§l/mdv unlock §f§l: 代引のロックを解除する", "§a段ボールを持ちクリックで解除", "/mdv unlock");
         MDVData.sendHoverText(p, "§e§l/mdv cash §f§l: 代引金額を受け取る", "§aクリックで受け取る", "/mdv cash");
         if(p.hasPermission("mdv.op")){
-            MDVData.sendHoverText(p, "§c§l/mdv on §f§l: このプラグインを起動する", "§a§l§nクリックで起動します!!確認してください！!", "/mdv on");
-            MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください！!", "/mdv off");
+            MDVData.sendHoverText(p, "§c§l/mdv on §f§l: このプラグインを起動する", "§a§l§nクリックで起動します!!確認してください!!", "/mdv on");
+            MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください!!", "/mdv off");
             MDVData.sendSuggestCommand(p, "§c§l/mdv info [player名] §f§l: 該当プレイヤーの記録をチェックする", "§aクリックでチャットに打ち込む", "/mdv info ");
             p.sendMessage("§cv3.2");
         }

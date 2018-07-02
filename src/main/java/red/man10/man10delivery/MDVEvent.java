@@ -39,6 +39,7 @@ public class MDVEvent implements Listener {
             if(hasEmptyInventory(e.getInventory())) {
                 p.sendMessage(plugin.prefix+"§c段ボールが空なので配達を中止しました。");
                 plugin.pstats.remove(p.getUniqueId());
+                plugin.pstats2.remove(p.getUniqueId());
                 return;
             }
             ArrayList<ItemStack> list = new ArrayList<>();
@@ -51,6 +52,7 @@ public class MDVEvent implements Listener {
             if(plugin.vault.getBalance(p.getUniqueId())< plugin.fee){
                 p.sendMessage(plugin.prefix+"§cお金が足りないため配送を中止しました。");
                 plugin.pstats.remove(p.getUniqueId());
+                plugin.pstats2.remove(p.getUniqueId());
                 for(ItemStack i : list){
                     p.getInventory().addItem(i);
                 }
@@ -90,6 +92,7 @@ public class MDVEvent implements Listener {
             plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(),plugin.fee,TransactionCategory.TAX,TransactionType.FEE,"mdv fee");
             p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(plugin.fee).getString()+"§a円支払い配送しました。");
             plugin.pstats.remove(p.getUniqueId());
+            plugin.pstats2.remove(p.getUniqueId());
         }
 
     }
@@ -110,7 +113,6 @@ public class MDVEvent implements Listener {
                             p.sendMessage(plugin.prefix + "§cインベントリがいっぱいなので中止しました。");
                             return;
                         }
-                        p.getInventory().setItemInMainHand(null);
                         MDVData.getItemCheck(p,MDVData.getitems.get(items));
                     }
                 }

@@ -30,11 +30,13 @@ public class MDVData {
     private static Man10Delivery plugin;
 
     public static HashMap<ItemStack,UUID> getitems;
+    private static HashMap<UUID,String> SQLWait;
 
     public static void loadEnable(Man10Delivery plugin, MySQLManager mysql){
         MDVData.plugin = plugin;
         MDVData.mysql = mysql;
         getitems = new HashMap<>();
+        SQLWait = new HashMap<>();
         AllloadBox();
     }
 
@@ -68,7 +70,7 @@ public class MDVData {
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
             if(Bukkit.getPlayer(destination)!=null){
-                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
         });
     }
@@ -102,7 +104,7 @@ public class MDVData {
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
             if(Bukkit.getPlayer(destination)!=null){
-                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
         });
     }
@@ -160,7 +162,7 @@ public class MDVData {
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
             if(Bukkit.getPlayer(destination)!=null){
-                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
+                sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
         });
     }
@@ -231,31 +233,6 @@ public class MDVData {
         });
     }
 
-    public static void GetBox(Player destination,UUID tag){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
-            ResultSet rs = mysql.query(sql);
-            if (rs == null) {
-                mysql.close();
-                return;
-            }
-            try {
-                if (rs.next()) {
-                    String result = rs.getString("box");
-                    ItemStack box = itemFromBase64(result);
-                    destination.getInventory().addItem(box);
-                    Gettrue(tag);
-                    loadBox(box, tag);
-                }
-                rs.close();
-            } catch (NullPointerException | SQLException e1) {
-                e1.printStackTrace();
-                return;
-            }
-            mysql.close();
-        });
-    }
-
     public static void GetPlayerBox(Player p){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
@@ -278,7 +255,26 @@ public class MDVData {
                     }
                     kensuu++;
                     UUID tag = UUID.fromString(rs.getString("tag"));
-                    GetBox(p, tag);
+                    String sqls = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+                    ResultSet rss = mysql.query(sqls);
+                    if (rss == null) {
+                        mysql.close();
+                        return;
+                    }
+                    try {
+                        if (rss.next()) {
+                            String result = rss.getString("box");
+                            ItemStack box = itemFromBase64(result);
+                            p.getInventory().addItem(box);
+                            Gettrue(tag);
+                            loadBox(box, tag);
+                        }
+                        rss.close();
+                    } catch (NullPointerException | SQLException e1) {
+                        e1.printStackTrace();
+                        return;
+                    }
+                    mysql.close();
                 }
                 rs.close();
             } catch (NullPointerException | SQLException e1) {
@@ -385,8 +381,8 @@ public class MDVData {
                 if (rs.next()) {
                     boolean cod = rs.getBoolean("cod");
                     if(cod){
-                        sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(段ボールを持ちクリック!)","§cクリックで支払い!","/mdv unlock");
-                        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_FALL ,1.0F,1.0F);
+                        sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(ここをクリック!)","§cクリックで支払い!","/mdv unlock");
+                        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE ,1.0F,1.0F);
                     }else{
                         getItem(p,tag);
                     }
@@ -415,16 +411,22 @@ public class MDVData {
                         double codbal = rs.getDouble("codbal");
                         UUID uuid = UUID.fromString(rs.getString("sender"));
                         if(codbal > plugin.vault.getBalance(p.getUniqueId())){
-                            p.sendMessage("§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
+                            p.sendMessage(plugin.prefix+"§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
                             return;
                         }
                         plugin.vault.takePlayerMoney(p.getUniqueId(),codbal,TransactionType.UNKNOWN,"mdv cod takemoney");
                         addOfflineBal(uuid,codbal);
                         String sqls = "UPDATE boxs SET cod = false where tag = '"+tag.toString()+"';";
                         mysql.execute(sqls);
-                        p.sendMessage("§a§l代引を行いました。§f§l(段ボールを右クリックで開きます。)");
+                        p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(codbal).getString()+"円§a§l支払いました。§f§l(段ボールを右クリックで開きます。)");
+                        p.playSound(p.getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                        UUID sender = UUID.fromString(rs.getString("sender"));
+                        if(Bukkit.getPlayer(sender)!=null){
+                            Bukkit.getPlayer(sender).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの代引きを支払いました。");
+                            Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                        }
                     }else{
-                        p.sendMessage("§a§lそのボックスは代引ではありません");
+                        p.sendMessage(plugin.prefix+"§a§lそのボックスは代引ではありません");
                     }
                 }
                 rs.close();
@@ -449,48 +451,72 @@ public class MDVData {
                 if (rs.next()) {
                     boolean get = rs.getBoolean("gets");
                     if (get) {
+                        p.getInventory().setItemInMainHand(null);
                         String result = rs.getString("box");
                         ItemStack box = itemFromBase64(result);
                         unloadBox(box);
                         //one item
                         String result1 = rs.getString("one");
                         ItemStack item1 = itemFromBase64(result1);
-                        p.getInventory().addItem(item1);
+                        if(item1 != null) {
+                            p.getInventory().addItem(item1);
+                        }
                         //two item
                         String result2 = rs.getString("two");
                         ItemStack item2 = itemFromBase64(result2);
-                        p.getInventory().addItem(item2);
+                        if(item2 != null) {
+                            p.getInventory().addItem(item2);
+                        }
                         //three item
                         String result3 = rs.getString("three");
                         ItemStack item3 = itemFromBase64(result3);
-                        p.getInventory().addItem(item3);
+                        if(item3 != null) {
+                            p.getInventory().addItem(item3);
+                        }
                         //four item
                         String result4 = rs.getString("four");
                         ItemStack item4 = itemFromBase64(result4);
-                        p.getInventory().addItem(item4);
+                        if(item4 != null) {
+                            p.getInventory().addItem(item4);
+                        }
                         //five item
                         String result5 = rs.getString("five");
-                        ItemStack item5 = itemFromBase64(result5);
-                        p.getInventory().addItem(item5);
+                        ItemStack item5 = itemFromBase64(result2);
+                        if(item5 != null) {
+                            p.getInventory().addItem(item5);
+                        }
                         //six item
                         String result6 = rs.getString("six");
                         ItemStack item6 = itemFromBase64(result6);
-                        p.getInventory().addItem(item6);
+                        if(item6 != null) {
+                            p.getInventory().addItem(item6);
+                        }
                         //seven item
                         String result7 = rs.getString("seven");
                         ItemStack item7 = itemFromBase64(result7);
-                        p.getInventory().addItem(item7);
+                        if(item7 != null) {
+                            p.getInventory().addItem(item7);
+                        }
                         //eight item
                         String result8 = rs.getString("eight");
                         ItemStack item8 = itemFromBase64(result8);
-                        p.getInventory().addItem(item8);
+                        if(item8!= null) {
+                            p.getInventory().addItem(item8);
+                        }
                         //nine item
                         String result9 = rs.getString("nine");
                         ItemStack item9 = itemFromBase64(result9);
-                        p.getInventory().addItem(item9);
+                        if(item9 != null) {
+                            p.getInventory().addItem(item9);
+                        }
                         removeBox(tag);
                         p.sendMessage(plugin.prefix + "§a段ボールを開けました。");
                         p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN ,1.0F,1.0F);
+                        UUID sender = UUID.fromString(rs.getString("sender"));
+                        if(Bukkit.getPlayer(sender)!=null){
+                            Bukkit.getPlayer(sender).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの段ボールを開けました。");
+                            Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                        }
                     }
                 }
                 rs.close();
@@ -513,24 +539,20 @@ public class MDVData {
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
             ResultSet rs = mysql.query(sql);
-            if (rs == null) {
-                mysql.close();
-                return;
-            }
-            try {
-                if (rs.next()) {
-                    mysql.close();
-                    rs.close();
-                    String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',0.0);";
-                    mysql.execute(sqls);
+            if (rs != null) {
+                try {
+                    if(rs.next()) {
+                        mysql.close();
+                        return;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                     return;
                 }
-                rs.close();
-            } catch (NullPointerException | SQLException e1) {
-                e1.printStackTrace();
-                return;
             }
             mysql.close();
+            String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',0.0);";
+            mysql.execute(sqls);
         });
     }
 
@@ -538,24 +560,20 @@ public class MDVData {
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
             ResultSet rs = mysql.query(sql);
-            if (rs == null) {
-                mysql.close();
-                return;
-            }
-            try {
-                if (rs.next()) {
-                    mysql.close();
-                    rs.close();
-                    String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',"+bal+");";
-                    mysql.execute(sqls);
+            if (rs != null) {
+                try {
+                    if(rs.next()) {
+                        mysql.close();
+                        return;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                     return;
                 }
-                rs.close();
-            } catch (NullPointerException | SQLException e1) {
-                e1.printStackTrace();
-                return;
             }
             mysql.close();
+            String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',"+bal+");";
+            mysql.execute(sqls);
         });
     }
 
@@ -565,15 +583,14 @@ public class MDVData {
                 String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
                 ResultSet rs = mysql.query(sql);
                 if (rs == null) {
+                    createUser(uuid,bal);
                     mysql.close();
                     return;
                 }
                 try {
                     if (rs.next()) {
-                        String sqls = "UPDATE users SET bal = bal+"+bal+" where uuid = '"+uuid.toString()+"';";
+                        String sqls = "UPDATE users SET offline_bal = offline_bal+"+bal+" where uuid = '"+uuid.toString()+"';";
                         mysql.execute(sqls);
-                    }else {
-                        createUser(uuid,bal);
                     }
                     rs.close();
                 } catch (NullPointerException | SQLException e1) {
@@ -591,19 +608,21 @@ public class MDVData {
             String sql = "SELECT * FROM users WHERE uuid = '" + p.getUniqueId().toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
+                p.sendMessage(plugin.prefix+"§e§l0円 引き出されました。");
+                createUser(p.getUniqueId());
                 mysql.close();
                 return;
             }
             try {
                 if (rs.next()) {
                     double addbal = rs.getDouble("offline_bal");
-                    String sqls = "UPDATE users SET bal = 0.0 where uuid = '"+p.getUniqueId().toString()+"';";
+                    String sqls = "UPDATE users SET offline_bal = 0.0 where uuid = '"+p.getUniqueId().toString()+"';";
                     mysql.execute(sqls);
                     MDVData.plugin.vault.givePlayerMoney(p.getUniqueId(),addbal,TransactionType.UNKNOWN,"mdv get cash");
                     p.sendMessage(plugin.prefix+"§e§l"+new JPYBalanceFormat(addbal).getString() +"円 引き出されました。");
-                }else {
-                    createUser(p.getUniqueId());
+                }else{
                     p.sendMessage(plugin.prefix+"§e§l0円 引き出されました。");
+                    createUser(p.getUniqueId());
                 }
                 rs.close();
             } catch (NullPointerException | SQLException e1) {
@@ -702,4 +721,17 @@ public class MDVData {
         BaseComponent[] message = new ComponentBuilder(text). event(hoverEvent).event(clickEvent). create();
         p.spigot().sendMessage(message);
     }
+
+    public static void addSQLWait(Player p){
+        SQLWait.put(p.getUniqueId(),"waiting…");
+    }
+
+    public static boolean containSQLWait(Player p){
+        return SQLWait.containsKey(p.getUniqueId());
+    }
+
+    public static void removeSQLWait(Player p){
+        SQLWait.remove(p.getUniqueId());
+    }
+
 }

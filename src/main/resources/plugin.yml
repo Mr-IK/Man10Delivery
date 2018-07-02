@@ -8,3 +8,7 @@ commands:
     description: Man10delivery
     usage: /<command>
     default: op
+  mletter:
+    description: Man10delivery
+    usage: /<command>
+    default: op

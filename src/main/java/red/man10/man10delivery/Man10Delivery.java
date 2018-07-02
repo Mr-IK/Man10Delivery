@@ -16,6 +16,7 @@ public final class Man10Delivery extends JavaPlugin {
     MDVEvent event;
     HashMap<UUID,UUID> pstats = new HashMap<>();
     HashMap<UUID,Double> pstats2 = new HashMap<>();
+    HashMap<UUID,String> pstats3 = new HashMap<>();
 
     boolean power = true;
 
@@ -30,6 +31,7 @@ public final class Man10Delivery extends JavaPlugin {
         mysql = new MySQLManager(this,"Man10Delivery");
         MDVData.loadEnable(this,mysql);
         getCommand("mdv").setExecutor(new MDVCommand(this));
+        getCommand("mletter").setExecutor(new MletterCommand(this));
         event = new MDVEvent(this);
         getServer().getPluginManager().registerEvents(event, this);
     }
@@ -38,4 +40,5 @@ public final class Man10Delivery extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
     }
+
 }

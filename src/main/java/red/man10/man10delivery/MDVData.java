@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -517,6 +518,88 @@ public class MDVData {
                             Bukkit.getPlayer(sender).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの段ボールを開けました。");
                             Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
                         }
+                    }
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
+    public static void viewBox(Player p,UUID uuid){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String sql = "SELECT * FROM boxs WHERE tag = '" + uuid.toString() + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                p.sendMessage(plugin.prefix + "§aIDを発見できませんでした。");
+                mysql.close();
+                return;
+            }
+            try {
+                if (rs.next()) {
+                    Inventory inv = Bukkit.createInventory(null,9,"§8表示中");
+                    boolean get = rs.getBoolean("gets");
+                    if (get) {
+                        //one item
+                        String result1 = rs.getString("one");
+                        ItemStack item1 = itemFromBase64(result1);
+                        if(item1 != null) {
+                            inv.addItem(item1);
+                        }
+                        //two item
+                        String result2 = rs.getString("two");
+                        ItemStack item2 = itemFromBase64(result2);
+                        if(item2 != null) {
+                            inv.addItem(item2);
+                        }
+                        //three item
+                        String result3 = rs.getString("three");
+                        ItemStack item3 = itemFromBase64(result3);
+                        if(item3 != null) {
+                            inv.addItem(item3);
+                        }
+                        //four item
+                        String result4 = rs.getString("four");
+                        ItemStack item4 = itemFromBase64(result4);
+                        if(item4 != null) {
+                            inv.addItem(item4);
+                        }
+                        //five item
+                        String result5 = rs.getString("five");
+                        ItemStack item5 = itemFromBase64(result2);
+                        if(item5 != null) {
+                            inv.addItem(item5);
+                        }
+                        //six item
+                        String result6 = rs.getString("six");
+                        ItemStack item6 = itemFromBase64(result6);
+                        if(item6 != null) {
+                            inv.addItem(item6);
+                        }
+                        //seven iteme
+                        String result7 = rs.getString("seven");
+                        ItemStack item7 = itemFromBase64(result7);
+                        if(item7 != null) {
+                            inv.addItem(item7);
+                        }
+                        //eight item
+                        String result8 = rs.getString("eight");
+                        ItemStack item8 = itemFromBase64(result8);
+                        if(item8!= null) {
+                            inv.addItem(item8);
+                        }
+                        //nine item
+                        String result9 = rs.getString("nine");
+                        ItemStack item9 = itemFromBase64(result9);
+                        if(item9 != null) {
+                            inv.addItem(item9);
+                        }
+                        p.sendMessage(plugin.prefix + "§a段ボールの中身を開きました。");
+                        plugin.pstats3.put(p.getUniqueId(),"view");
+                        p.openInventory(inv);
                     }
                 }
                 rs.close();

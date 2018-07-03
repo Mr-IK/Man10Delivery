@@ -110,10 +110,12 @@ public class MDVEvent implements Listener {
                 Player p = (Player) e.getWhoClicked();
                 if(e.getSlot()==1){
                     p.chat("/mdv check");
-                }else if(e.getSlot()==4) {
+                }else if(e.getSlot()==3) {
                     p.chat("/mletter");
-                }else if(e.getSlot()==7){
+                }else if(e.getSlot()==5){
                     p.chat("/mdv send");
+                }else if(e.getSlot()==7){
+                    p.chat("/mdv cash");
                 }
                 p.closeInventory();
             }

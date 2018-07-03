@@ -104,7 +104,7 @@ public class MDVCommand implements CommandExecutor {
                     MDVData.sendHoverText(p, "§c§l/mdv on §f§l: このプラグインを起動する", "§a§l§nクリックで起動します!!確認してください!!", "/mdv on");
                     MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください!!", "/mdv off");
                     MDVData.sendSuggestCommand(p, "§c§l/mdv info [player名] §f§l: 該当プレイヤーの記録をチェックする", "§aクリックでチャットに打ち込む", "/mdv info ");
-                    p.sendMessage("§cv3.2");
+                    p.sendMessage("§cv3.3");
                 }
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
                 return true;
@@ -154,94 +154,97 @@ public class MDVCommand implements CommandExecutor {
                 Bukkit.broadcastMessage(plugin.prefix+"§7§l停止完了。");
                 return true;
             }
-            if(Bukkit.getPlayer(args[0])==null) {
-                if (!Bukkit.getOfflinePlayer(args[0]).hasPlayedBefore()) {
-                    p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
-                    return true;
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (Bukkit.getPlayer(args[0]) == null) {
+                    if (!MDVData.containUser(Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
+                        p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
+                        return;
+                    }
+                    if (Bukkit.getOfflinePlayer(args[0]).getUniqueId() == p.getUniqueId()) {
+                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                        return;
+                    }
+                    Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
+                    plugin.pstats.put(p.getUniqueId(), Bukkit.getOfflinePlayer(args[0]).getUniqueId());
+                    p.openInventory(inv);
+                } else {
+                    if (Bukkit.getPlayer(args[0]).getUniqueId() == p.getUniqueId()) {
+                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                        return;
+                    }
+                    Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
+                    plugin.pstats.put(p.getUniqueId(), Bukkit.getPlayer(args[0]).getUniqueId());
+                    p.openInventory(inv);
                 }
-                if(Bukkit.getOfflinePlayer(args[0]).getUniqueId()==p.getUniqueId()){
-                    p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                    return true;
-                }
-                Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
-                plugin.pstats.put(p.getUniqueId(), Bukkit.getOfflinePlayer(args[0]).getUniqueId());
-                p.openInventory(inv);
-                return true;
-            }else {
-                if (Bukkit.getPlayer(args[0]).getUniqueId() == p.getUniqueId()) {
-                    p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                    return true;
-                }
-                Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
-                plugin.pstats.put(p.getUniqueId(), Bukkit.getPlayer(args[0]).getUniqueId());
-                p.openInventory(inv);
-                return true;
-            }
+            });
+            return true;
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("info")) {
                 if(!p.hasPermission("mdv.op")){
                     p.sendMessage(plugin.prefix + "§cあなたには権限がありません！");
                     return true;
                 }
-                UUID uuid = null;
-                if(Bukkit.getPlayer(args[0])==null) {
-                    if (!Bukkit.getOfflinePlayer(args[1]).hasPlayedBefore()) {
-                        p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
-                        return true;
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    UUID uuid = null;
+                    if (Bukkit.getPlayer(args[0]) == null) {
+                        if (!MDVData.containUser(Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
+                            p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
+                            return;
+                        }
+                        if (Bukkit.getOfflinePlayer(args[0]).getUniqueId() == p.getUniqueId()) {
+                            p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                            return;
+                        }
+                        uuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
+                    } else {
+                        if (Bukkit.getPlayer(args[0]).getUniqueId() == p.getUniqueId()) {
+                            p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                            return;
+                        }
+                        uuid = Bukkit.getPlayer(args[1]).getUniqueId();
                     }
-                    if(Bukkit.getOfflinePlayer(args[0]).getUniqueId()==p.getUniqueId()){
-                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                        return true;
-                    }
-                    uuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
-                }else {
-                    if (Bukkit.getPlayer(args[0]).getUniqueId() == p.getUniqueId()) {
-                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                        return true;
-                    }
-                    uuid = Bukkit.getPlayer(args[1]).getUniqueId();
-                }
-                MDVData.GetPlayerInfo(p,uuid);
+                    MDVData.GetPlayerInfo(p, uuid);
+                });
                 return true;
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("cod")) {
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 double cash = 0;
                 try{
                     cash = Double.valueOf(args[2]);
                 }catch (NumberFormatException e){
                     p.sendMessage(plugin.prefix + "§c数字で入力してください");
-                    return true;
+                    return;
                 }
                 if(cash < 1){
                     p.sendMessage(plugin.prefix + "§c1以上の数字で入力してください");
-                    return true;
+                    return;
                 }
-                if(Bukkit.getPlayer(args[1])==null) {
-                    if (!Bukkit.getOfflinePlayer(args[1]).hasPlayedBefore()) {
-                        p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
-                        return true;
+                    if (Bukkit.getPlayer(args[1]) == null) {
+                        if (!MDVData.containUser(Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
+                            p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
+                            return;
+                        }
+                        if (Bukkit.getOfflinePlayer(args[1]).getUniqueId() == p.getUniqueId()) {
+                            p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                            return;
+                        }
+                        Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
+                        plugin.pstats.put(p.getUniqueId(), Bukkit.getOfflinePlayer(args[1]).getUniqueId());
+                        plugin.pstats2.put(p.getUniqueId(), cash);
+                        p.openInventory(inv);
+                    } else {
+                        if (Bukkit.getPlayer(args[1]).getUniqueId() == p.getUniqueId()) {
+                            p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
+                            return;
+                        }
+                        Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
+                        plugin.pstats.put(p.getUniqueId(), Bukkit.getPlayer(args[1]).getUniqueId());
+                        plugin.pstats2.put(p.getUniqueId(), cash);
+                        p.openInventory(inv);
                     }
-                    if(Bukkit.getOfflinePlayer(args[1]).getUniqueId()==p.getUniqueId()){
-                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                        return true;
-                    }
-                    Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
-                    plugin.pstats.put(p.getUniqueId(), Bukkit.getOfflinePlayer(args[1]).getUniqueId());
-                    plugin.pstats2.put(p.getUniqueId(),cash);
-                    p.openInventory(inv);
-                    return true;
-                }else {
-                    if (Bukkit.getPlayer(args[1]).getUniqueId() == p.getUniqueId()) {
-                        p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
-                        return true;
-                    }
-                    Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
-                    plugin.pstats.put(p.getUniqueId(), Bukkit.getPlayer(args[1]).getUniqueId());
-                    plugin.pstats2.put(p.getUniqueId(),cash);
-                    p.openInventory(inv);
-                    return true;
-                }
+                });
             }
         }
         Inventory inv = Bukkit.createInventory(null,9,plugin.prefix);

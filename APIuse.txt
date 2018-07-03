@@ -5,7 +5,7 @@ Mr_IKからもらったファイルをもらいlibsに入れ pom.xmlにこれを
     <artifactId>red.man10</artifactId>
     <groupId>Man10Delivery</groupId>
     <scope>system</scope>
-    <version>3.2</version>
+    <version>3.3</version>
     <systemPath>${basedir}/libs/Man10Delivery.jar</systemPath>
 </dependency>
 ===================================================================

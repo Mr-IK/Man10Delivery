@@ -234,6 +234,34 @@ public class MDVData {
         });
     }
 
+    //使う側でスレッド化必須!!!
+    public static boolean ContainPlayerBox(UUID uuid){
+        String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "' AND gets = " + false + ";";
+        ResultSet rs = mysql.query(sql);
+        if (rs == null) {
+            mysql.close();
+            return false;
+        }
+        try {
+            if(rs.next()){
+                return true;
+            }
+        } catch (NullPointerException | SQLException e1) {
+            e1.printStackTrace();
+            return false;
+        }
+        mysql.close();
+        return false;
+    }
+
+    public static void LoginContainBox(Player p){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            if(ContainPlayerBox(p.getUniqueId())) {
+                sendHoverText(p,plugin.prefix+"§a§l§n荷物が届いています！!§f§l(クリック)","/mdv check","/mdv check");
+            }
+        });
+    }
+
     public static void GetPlayerBox(Player p){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
@@ -482,7 +510,7 @@ public class MDVData {
                         }
                         //five item
                         String result5 = rs.getString("five");
-                        ItemStack item5 = itemFromBase64(result2);
+                        ItemStack item5 = itemFromBase64(result5);
                         if(item5 != null) {
                             p.getInventory().addItem(item5);
                         }
@@ -569,7 +597,7 @@ public class MDVData {
                         }
                         //five item
                         String result5 = rs.getString("five");
-                        ItemStack item5 = itemFromBase64(result2);
+                        ItemStack item5 = itemFromBase64(result5);
                         if(item5 != null) {
                             inv.addItem(item5);
                         }
@@ -658,6 +686,25 @@ public class MDVData {
             String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',"+bal+");";
             mysql.execute(sqls);
         });
+    }
+
+    //使う側を絶対にスレッド化すること！！
+    public static boolean containUser(UUID uuid){
+        String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+        ResultSet rs = mysql.query(sql);
+        if (rs != null) {
+            try {
+                if(rs.next()) {
+                    mysql.close();
+                    return true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        mysql.close();
+        return false;
     }
 
     public static void addOfflineBal(UUID uuid,double bal){

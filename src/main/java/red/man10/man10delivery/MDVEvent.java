@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -126,6 +127,11 @@ public class MDVEvent implements Listener {
     public void onJoin(PlayerJoinEvent e){
         MDVData.createUser(e.getPlayer().getUniqueId());
         MDVData.LoginContainBox(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent e){
+        plugin.ac.removeUUID(e.getPlayer().getUniqueId());
     }
 
     @EventHandler

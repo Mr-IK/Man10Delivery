@@ -6,7 +6,7 @@
 
     <groupId>red.man10</groupId>
     <artifactId>Man10Delivery</artifactId>
-    <version>3.3</version>
+    <version>3.4</version>
     <packaging>jar</packaging>
 
     <name>Man10Delivery</name>

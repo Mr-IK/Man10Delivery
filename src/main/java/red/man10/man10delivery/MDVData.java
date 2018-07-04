@@ -367,7 +367,37 @@ public class MDVData {
         getitems.put(item,tag);
     }
 
+    public static void pelloff(Player p,ItemStack item){
+        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+            String items = itemToBase64(item);
+            String sql = "SELECT * FROM boxs WHERE box = '" + items + "';";
+            ResultSet rs = mysql.query(sql);
+            if (rs == null) {
+                p.sendMessage(plugin.prefix+"§c§l箱ではありません");
+                mysql.close();
+                return;
+            }
+            try {
+                if(rs.next()) {
+                    String tags = rs.getString("tag");
+                    UUID tag = UUID.fromString(tags);
+                    unloadBox(item);
+                    loadBox(item, tag);
+                    p.sendMessage(plugin.prefix+"§c§lガムテープを剥がしました！");
+                }else{
+                    p.sendMessage(plugin.prefix+"§c§l箱ではありません");
+                }
+                rs.close();
+            } catch (NullPointerException | SQLException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            mysql.close();
+        });
+    }
+
     public static void AllloadBox(){
+        getitems.clear();
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM boxs WHERE gets = " + true + ";";
             ResultSet rs = mysql.query(sql);
@@ -379,7 +409,6 @@ public class MDVData {
                 while (rs.next()) {
                     String result = rs.getString("box");
                     ItemStack box = itemFromBase64(result);
-                    unloadBox(box);
                     String tags = rs.getString("tag");
                     UUID tag = UUID.fromString(tags);
                     loadBox(box, tag);
@@ -438,22 +467,35 @@ public class MDVData {
                     boolean cod = rs.getBoolean("cod");
                     if(cod){
                         double codbal = rs.getDouble("codbal");
-                        UUID uuid = UUID.fromString(rs.getString("sender"));
-                        if(codbal > plugin.vault.getBalance(p.getUniqueId())){
-                            p.sendMessage(plugin.prefix+"§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
-                            return;
+                        UUID uuid;
+                        try {
+                            uuid = UUID.fromString(rs.getString("sender"));
+                            if(codbal > plugin.vault.getBalance(p.getUniqueId())){
+                                p.sendMessage(plugin.prefix+"§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
+                                return;
+                            }
+                            plugin.vault.takePlayerMoney(p.getUniqueId(),codbal,TransactionType.UNKNOWN,"mdv cod takemoney");
+                            addOfflineBal(uuid,codbal);
+                            String sqls = "UPDATE boxs SET cod = false where tag = '"+tag.toString()+"';";
+                            mysql.execute(sqls);
+                            p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(codbal).getString()+"円§a§l支払いました。§f§l(段ボールを右クリックで開きます。)");
+                            p.playSound(p.getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                            if(Bukkit.getPlayer(uuid)!=null){
+                                Bukkit.getPlayer(uuid).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの代引きを支払いました。");
+                                Bukkit.getPlayer(uuid).playSound(Bukkit.getPlayer(uuid).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                            }
+                        }catch (IllegalArgumentException e){
+                            if(codbal > plugin.vault.getBalance(p.getUniqueId())){
+                                p.sendMessage(plugin.prefix+"§c§lお金が足りません！§e(必要金額: "+new JPYBalanceFormat(codbal).getString()+"円)");
+                                return;
+                            }
+                            plugin.vault.takePlayerMoney(p.getUniqueId(),codbal,TransactionType.UNKNOWN,"mdv cod takemoney");
+                            String sqls = "UPDATE boxs SET cod = false where tag = '"+tag.toString()+"';";
+                            mysql.execute(sqls);
+                            p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(codbal).getString()+"円§a§l支払いました。§f§l(段ボールを右クリックで開きます。)");
+                            p.playSound(p.getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
                         }
-                        plugin.vault.takePlayerMoney(p.getUniqueId(),codbal,TransactionType.UNKNOWN,"mdv cod takemoney");
-                        addOfflineBal(uuid,codbal);
-                        String sqls = "UPDATE boxs SET cod = false where tag = '"+tag.toString()+"';";
-                        mysql.execute(sqls);
-                        p.sendMessage(plugin.prefix+"§e"+new JPYBalanceFormat(codbal).getString()+"円§a§l支払いました。§f§l(段ボールを右クリックで開きます。)");
-                        p.playSound(p.getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
-                        UUID sender = UUID.fromString(rs.getString("sender"));
-                        if(Bukkit.getPlayer(sender)!=null){
-                            Bukkit.getPlayer(sender).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの代引きを支払いました。");
-                            Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
-                        }
+
                     }else{
                         p.sendMessage(plugin.prefix+"§a§lそのボックスは代引ではありません");
                     }
@@ -541,10 +583,14 @@ public class MDVData {
                         removeBox(tag);
                         p.sendMessage(plugin.prefix + "§a段ボールを開けました。");
                         p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN ,1.0F,1.0F);
-                        UUID sender = UUID.fromString(rs.getString("sender"));
-                        if(Bukkit.getPlayer(sender)!=null){
-                            Bukkit.getPlayer(sender).sendMessage(plugin.prefix+"§e§l"+p.getDisplayName()+"さんが§a§lあなたの段ボールを開けました。");
-                            Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(),Sound.ENTITY_PLAYER_LEVELUP,1.0F,1.0F);
+                        try {
+                            UUID sender = UUID.fromString(rs.getString("sender"));
+                            if (Bukkit.getPlayer(sender) != null) {
+                                Bukkit.getPlayer(sender).sendMessage(plugin.prefix + "§e§l" + p.getDisplayName() + "さんが§a§lあなたの段ボールを開けました。");
+                                Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+                            }
+                        }catch (IllegalArgumentException e){
+                            return;
                         }
                     }
                 }

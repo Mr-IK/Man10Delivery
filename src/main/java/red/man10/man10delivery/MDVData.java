@@ -513,6 +513,8 @@ public class MDVData {
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
+                p.getInventory().setItemInMainHand(null);
+                p.sendMessage(plugin.prefix + "§aそのboxはすでに開けられています。");
                 mysql.close();
                 return;
             }

@@ -1,5 +1,6 @@
 package red.man10.man10delivery;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import red.man10.man10vaultapiplus.Man10VaultAPI;
@@ -21,6 +22,9 @@ public final class Man10Delivery extends JavaPlugin {
 
     boolean power = true;
 
+    Material box;
+    int meta;
+
     int fee = -1;
     @Override
     public void onEnable() {
@@ -28,6 +32,8 @@ public final class Man10Delivery extends JavaPlugin {
         saveDefaultConfig();
         config = getConfig();
         fee = config.getInt("fee");
+        box = Material.getMaterial(config.getString("box_material"));
+        meta = config.getInt("box_meta");
         vault = new Man10VaultAPI("Man10Delivery");
         mysql = new MySQLManager(this,"Man10Delivery");
         MDVData.loadEnable(this,mysql);

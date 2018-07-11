@@ -81,13 +81,7 @@ public class MDVCommand implements CommandExecutor {
             return true;
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("check")) {
-                if(MDVData.containSQLWait(p)){
-                    p.sendMessage(plugin.prefix + "§c処理中です。お待ちください。");
-                    return true;
-                }
-                MDVData.addSQLWait(p);
                 MDVData.GetPlayerBox(p);
-                MDVData.removeSQLWait(p);
                 return true;
             }else if (args[0].equalsIgnoreCase("unlock")) {
                 if (p.getInventory().getItemInMainHand().getAmount() == 0) {
@@ -101,6 +95,24 @@ public class MDVCommand implements CommandExecutor {
                 }
                 UUID tag = MDVData.getitems.get(item);
                 MDVData.unLockBox(p, tag);
+                return true;
+            }else if (args[0].equalsIgnoreCase("setbox")) {
+                if(!p.hasPermission("mdv.op")){
+                    p.sendMessage(plugin.prefix + "§cあなたには権限がありません！");
+                    return true;
+                }
+                if(p.getInventory().getItemInMainHand().getAmount()==0){
+                    p.sendMessage(plugin.prefix + "§c段ボールを持ってください。");
+                    return true;
+                }
+                Material box = p.getInventory().getItemInMainHand().getType();
+                int meta = p.getInventory().getItemInMainHand().getDurability();
+                plugin.box = box;
+                plugin.meta = meta;
+                plugin.config.set("box_material",box.getData().getTypeName());
+                plugin.config.set("box_meta",meta);
+                plugin.saveConfig();
+                p.sendMessage(plugin.prefix + "§a段ボールアイテムを "+box.getData().getTypeName()+" ("+meta+") に設定しました。");
                 return true;
             }else if(args[0].equalsIgnoreCase("help")){
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
@@ -117,7 +129,8 @@ public class MDVCommand implements CommandExecutor {
                     MDVData.sendHoverText(p, "§c§l/mdv off §f§l: このプラグインを停止する", "§4§l§nクリックで停止します!!確認してください!!", "/mdv off");
                     MDVData.sendHoverText(p, "§c§l/mdv reload §f§l: 箱データを再読み込みする", "§c§lクリックで再読み込み", "/mdv reload");
                     MDVData.sendSuggestCommand(p, "§c§l/mdv info [player名] §f§l: 該当プレイヤーの記録をチェックする", "§aクリックでチャットに打ち込む", "/mdv info ");
-                    p.sendMessage("§cv3.4");
+                    MDVData.sendHoverText(p, "§c§l/mdv setbox §f§l: ボックスのアイテムを手に持ったアイテムに設定する", "§aクリックでチャットに打ち込む", "/mdv setbox");
+                    p.sendMessage("§cv3.6");
                 }
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
                 return true;
@@ -137,16 +150,9 @@ public class MDVCommand implements CommandExecutor {
             }else if (args[0].equalsIgnoreCase("send")) {
                 MDVData.sendSuggestCommand(p, "§e§l/mdv [player名] §f§l: プレイヤーにアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv ");
                 MDVData.sendSuggestCommand(p, "§e§l/mdv cod [player名] [代引金額]§f§l: プレイヤーに代引でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv cod ");
-                MDVData.sendHoverText(p,"§4§l/mdv ??? ??? ??? §c§l: Coming soon…","§cお楽しみに…",null);
                 return true;
             }else if (args[0].equalsIgnoreCase("cash")) {
-                if(MDVData.containSQLWait(p)){
-                    p.sendMessage(plugin.prefix + "§c処理中です。お待ちください。");
-                    return true;
-                }
-                MDVData.addSQLWait(p);
                 MDVData.getOfflineBal(p);
-                MDVData.removeSQLWait(p);
                 return true;
             }else if (args[0].equalsIgnoreCase("on")) {
                 if(!p.hasPermission("mdv.op")){

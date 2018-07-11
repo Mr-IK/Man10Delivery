@@ -31,13 +31,11 @@ public class MDVData {
     private static Man10Delivery plugin;
 
     public static HashMap<ItemStack,UUID> getitems;
-    private static HashMap<UUID,String> SQLWait;
 
     public static void loadEnable(Man10Delivery plugin, MySQLManager mysql){
         MDVData.plugin = plugin;
         MDVData.mysql = mysql;
         getitems = new HashMap<>();
-        SQLWait = new HashMap<>();
         AllloadBox();
     }
 
@@ -262,7 +260,7 @@ public class MDVData {
         });
     }
 
-    public static void GetPlayerBox(Player p){
+    synchronized public static void GetPlayerBox(Player p){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
             int kensuu = 0;
@@ -454,7 +452,7 @@ public class MDVData {
         });
     }
 
-    public static void unLockBox(Player p,UUID tag){
+    synchronized public static void unLockBox(Player p,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
             ResultSet rs = mysql.query(sql);
@@ -510,7 +508,7 @@ public class MDVData {
     }
 
 
-    public static void getItem(Player p,UUID tag){
+    synchronized  public static void getItem(Player p,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
             ResultSet rs = mysql.query(sql);
@@ -779,7 +777,7 @@ public class MDVData {
         });
     }
 
-    public static void getOfflineBal(Player p){
+    synchronized public static void getOfflineBal(Player p){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM users WHERE uuid = '" + p.getUniqueId().toString() + "';";
             ResultSet rs = mysql.query(sql);
@@ -896,18 +894,6 @@ public class MDVData {
 
         BaseComponent[] message = new ComponentBuilder(text). event(hoverEvent).event(clickEvent). create();
         p.spigot().sendMessage(message);
-    }
-
-    public static void addSQLWait(Player p){
-        SQLWait.put(p.getUniqueId(),"waiting…");
-    }
-
-    public static boolean containSQLWait(Player p){
-        return SQLWait.containsKey(p.getUniqueId());
-    }
-
-    public static void removeSQLWait(Player p){
-        SQLWait.remove(p.getUniqueId());
     }
 
 }

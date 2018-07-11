@@ -61,10 +61,10 @@ public class MDVEvent implements Listener {
                 }
                 return;
             }
-            ItemStack items = new ItemStack(Material.DIAMOND_HOE, 1, (short) 48);
+            ItemStack items = new ItemStack(plugin.box, 1, (short) plugin.meta);
             ItemMeta itemmeta = items.getItemMeta();
             itemmeta.setDisplayName("§2§l[§f段ボール§6箱§2§l]§7(右クリック)§r");
-            List<String> k = new ArrayList<String>();
+            List<String> k = new ArrayList<>();
             k.add("§6送り主: §f" + p.getName());
             String name = null;
             if (Bukkit.getPlayer(plugin.pstats.get(p.getUniqueId())) == null) {

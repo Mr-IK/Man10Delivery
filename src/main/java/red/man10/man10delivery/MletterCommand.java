@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import red.man10.man10vaultapiplus.JPYBalanceFormat;
+import red.man10.man10vaultapiplus.enums.TransactionCategory;
 import red.man10.man10vaultapiplus.enums.TransactionType;
 
 import java.util.ArrayList;
@@ -61,15 +62,17 @@ public class MletterCommand implements CommandExecutor {
             for(String m:ChatColor.translateAlternateColorCodes('&',lore).split(";")) {
                 k.add("§f"+m);
             }
-            ItemStack item = new ItemStack(Material.PAPER);
+            ItemStack item = new ItemStack(Material.DIAMOND_HOE,1,(short)857);
             ItemMeta meta = item.getItemMeta();
             meta.addEnchant(Enchantment.DAMAGE_ALL,1,true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             meta.setDisplayName(title);
             meta.setLore(k);
+            meta.setUnbreakable(true);
+            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
             item.setItemMeta(meta);
             p.getInventory().addItem(item);
-            plugin.vault.takePlayerMoney(p.getUniqueId(),plugin.fee,TransactionType.FEE,"mletter fee");
+            plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(),plugin.fee,TransactionCategory.TAX,TransactionType.FEE,"mletter fee");
             p.sendMessage(plugin.prefix + "§a手紙作成完了！");
             return true;
         }

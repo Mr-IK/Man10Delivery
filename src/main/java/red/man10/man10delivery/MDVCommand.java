@@ -109,10 +109,10 @@ public class MDVCommand implements CommandExecutor {
                 int meta = p.getInventory().getItemInMainHand().getDurability();
                 plugin.box = box;
                 plugin.meta = meta;
-                plugin.config.set("box_material",box.getData().getTypeName());
+                plugin.config.set("box_material",box.name());
                 plugin.config.set("box_meta",meta);
                 plugin.saveConfig();
-                p.sendMessage(plugin.prefix + "§a段ボールアイテムを "+box.getData().getTypeName()+" ("+meta+") に設定しました。");
+                p.sendMessage(plugin.prefix + "§a段ボールアイテムを "+box.name()+" ("+meta+") に設定しました。");
                 return true;
             }else if(args[0].equalsIgnoreCase("help")){
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");

@@ -130,6 +130,7 @@ public class MDVCommand implements CommandExecutor {
                     MDVData.sendHoverText(p, "§c§l/mdv reload §f§l: 箱データを再読み込みする", "§c§lクリックで再読み込み", "/mdv reload");
                     MDVData.sendSuggestCommand(p, "§c§l/mdv info [player名] §f§l: 該当プレイヤーの記録をチェックする", "§aクリックでチャットに打ち込む", "/mdv info ");
                     MDVData.sendHoverText(p, "§c§l/mdv setbox §f§l: ボックスのアイテムを手に持ったアイテムに設定する", "§aクリックでチャットに打ち込む", "/mdv setbox");
+                    MDVData.sendSuggestCommand(p, "§c§l/mdv fee [金額] §f§l: [金額]に手数料を設定", "§aクリックでチャットに打ち込む", "/mdv fee ");
                     p.sendMessage("§cv3.6");
                 }
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
@@ -239,6 +240,10 @@ public class MDVCommand implements CommandExecutor {
                     return true;
                 }
             }else if (args[0].equalsIgnoreCase("fee")) {
+                if(!p.hasPermission("mdv.op")){
+                    p.sendMessage(plugin.prefix + "§cあなたには権限がありません！");
+                    return true;
+                }
                 int fee = -1;
                 try{
                     fee = Integer.parseInt(args[1]);

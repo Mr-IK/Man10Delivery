@@ -261,7 +261,6 @@ public class MDVData {
     }
 
     synchronized public static void GetPlayerBox(Player p){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
             int kensuu = 0;
             UUID uuid = p.getUniqueId();
@@ -310,7 +309,6 @@ public class MDVData {
             }
             mysql.close();
             p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の荷物を受け取りました。");
-        });
     }
 
     public static void GetPlayerInfo(Player p,UUID uuid){
@@ -508,8 +506,7 @@ public class MDVData {
     }
 
 
-    synchronized  public static void getItem(Player p,UUID tag){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
+    synchronized public static void getItem(Player p,UUID tag){
             String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
@@ -600,7 +597,6 @@ public class MDVData {
                 return;
             }
             mysql.close();
-        });
     }
 
     public static void viewBox(Player p,UUID uuid){
@@ -780,7 +776,6 @@ public class MDVData {
     }
 
     synchronized public static void getOfflineBal(Player p){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "SELECT * FROM users WHERE uuid = '" + p.getUniqueId().toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
@@ -806,7 +801,6 @@ public class MDVData {
                 return;
             }
             mysql.close();
-        });
     }
 
 

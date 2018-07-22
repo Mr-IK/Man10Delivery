@@ -15,3 +15,7 @@ Mr_IKからもらったファイルをもらいlibsに入れ pom.xmlにこれを
 ((MDVAPI.sendPlayertoBox("送り主名",送信先のプレイヤーUUID,ArrayList<ItemStack>, 重複しないUUID);))
 代引使用の場合
 ((MDVAPI.sendPlayertoBox("送り主名",送信先のプレイヤーUUID,ArrayList<ItemStack>, 重複しないUUID, 代引料金);))
+
+プレイヤーが一回でもサーバーに入っているかどうかチェック(返り値 boolean)
+true = 存在する false = 存在しない
+((checkOfflinePlayer(おふらいんぷれいやー);))

@@ -81,7 +81,7 @@ public class MDVCommand implements CommandExecutor {
             return true;
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("check")) {
-                MDVData.GetPlayerBox(p);
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> MDVData.GetPlayerBox(p));
                 return true;
             }else if (args[0].equalsIgnoreCase("unlock")) {
                 if (p.getInventory().getItemInMainHand().getAmount() == 0) {
@@ -152,7 +152,7 @@ public class MDVCommand implements CommandExecutor {
                 MDVData.sendSuggestCommand(p, "§e§l/mdv cod [player名] [代引金額]§f§l: プレイヤーに代引でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv cod ");
                 return true;
             }else if (args[0].equalsIgnoreCase("cash")) {
-                MDVData.getOfflineBal(p);
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> MDVData.getOfflineBal(p));
                 return true;
             }else if (args[0].equalsIgnoreCase("on")) {
                 if(!p.hasPermission("mdv.op")){
@@ -238,6 +238,23 @@ public class MDVCommand implements CommandExecutor {
                     p.sendMessage(plugin.prefix + "§cオートチェックをオフにしました。");
                     return true;
                 }
+            }else if (args[0].equalsIgnoreCase("fee")) {
+                int fee = -1;
+                try{
+                    fee = Integer.parseInt(args[1]);
+                }catch(NumberFormatException e){
+                    p.sendMessage(plugin.prefix + "§c数字で入力してください");
+                    return true;
+                }
+                if(fee <= 0){
+                    p.sendMessage(plugin.prefix + "§c1以上の整数で入力してください");
+                    return true;
+                }
+                plugin.fee = fee;
+                plugin.config.set("fee",fee);
+                plugin.saveConfig();
+                p.sendMessage(plugin.prefix + "§a手数料を §e$"+fee+" §aに設定しました。");
+                return true;
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("cod")) {

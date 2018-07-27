@@ -39,7 +39,7 @@ public class MDVEvent implements Listener {
         Player p = (Player) e.getPlayer();
         plugin.pstats3.remove(p.getUniqueId());
         if(plugin.pstats.containsKey(p.getUniqueId())) {
-            if (hasEmptyInventory(e.getInventory())) {
+            if (hasEmptyInventory(e.getInventory(),9)) {
                 p.sendMessage(plugin.prefix + "§c段ボールが空なので配達を中止しました。");
                 plugin.pstats.remove(p.getUniqueId());
                 plugin.pstats2.remove(p.getUniqueId());
@@ -150,15 +150,15 @@ public class MDVEvent implements Listener {
                             p.sendMessage(plugin.prefix + "§cインベントリがいっぱいなので中止しました。");
                             return;
                         }
-                        MDVData.getItemCheck(p,MDVData.getitems.get(items));
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> MDVData.getItemCheck(p, MDVData.getitems.get(items)));
                     }
                 }
             }
         }
     }
 
-    public boolean hasEmptyInventory(Inventory inv) {
-        for(int i = 0; i<=8; i++){
+    public boolean hasEmptyInventory(Inventory inv,int size) {
+        for(int i = 0; i<=(size-1); i++){
             if(inv.getItem(i)!=null) {
                 return false;
             }

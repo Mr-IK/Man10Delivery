@@ -2,18 +2,20 @@ package red.man10.man10delivery;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class AutoCheck {
     private Man10Delivery plugin;
+    private BukkitTask run;
     private ArrayList<UUID> autolist = new ArrayList<>();
     public AutoCheck(Man10Delivery plugin){
         this.plugin = plugin;
     }
     public void start() {
-        new BukkitRunnable() {
+        run = new BukkitRunnable(){
             @Override
             public void run() {
                 if (plugin.power) {
@@ -31,6 +33,10 @@ public class AutoCheck {
 
     public void addUUID(UUID uuid){
         autolist.add(uuid);
+    }
+
+    public void reboot(){
+        run.cancel();
     }
 
 }

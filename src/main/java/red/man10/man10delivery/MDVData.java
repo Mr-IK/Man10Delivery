@@ -27,8 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MDVData {
-    private static MySQLManager mysql;
-    private static Man10Delivery plugin;
+    public static MySQLManager mysql;
+    public static Man10Delivery plugin;
 
     public static HashMap<ItemStack,UUID> getitems;
 
@@ -68,6 +68,13 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            LogManager.createLog(LogManager.Category.sendBox,
+                    tags,
+                    "send simple box",
+                    sender.toString(),
+                    Bukkit.getOfflinePlayer(sender).getName(),
+                    destination.toString(),
+                    Bukkit.getOfflinePlayer(destination).getName(),0,itemlist);
             if(Bukkit.getPlayer(destination)!=null){
                 sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
@@ -102,6 +109,13 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            LogManager.createLog(LogManager.Category.sendCodBox,
+                    tags,
+                    "send cod box",
+                    sender.toString(),
+                    Bukkit.getOfflinePlayer(sender).getName(),
+                    destination.toString(),
+                    Bukkit.getOfflinePlayer(destination).getName(),cash,itemlist);
             if(Bukkit.getPlayer(destination)!=null){
                 sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
@@ -113,7 +127,7 @@ public class MDVData {
             if (itemlist.size() > 9 || itemlist.size() == 0) {
                 return;
             }
-            ItemStack items = new ItemStack(Material.DIAMOND_HOE,1,(short)48);
+            ItemStack items = new ItemStack(plugin.box, 1, (short) plugin.meta);
             ItemMeta itemmeta = items.getItemMeta();
             itemmeta.setDisplayName("§2§l[§f段ボール§6箱§2§l]§7(右クリック)§r");
             List<String> k = new ArrayList<String>();
@@ -160,6 +174,13 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            LogManager.createLog(LogManager.Category.sendBox,
+                    tags,
+                    "send simple box (OtherPlugin)",
+                    "OtherPlugin",
+                    sendername,
+                    destination.toString(),
+                    Bukkit.getOfflinePlayer(destination).getName(),0,itemlist);
             if(Bukkit.getPlayer(destination)!=null){
                 sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
@@ -171,7 +192,7 @@ public class MDVData {
             if (itemlist.size() > 9 || itemlist.size() == 0) {
                 return;
             }
-            ItemStack items = new ItemStack(Material.DIAMOND_HOE,1,(short)48);
+            ItemStack items = new ItemStack(plugin.box, 1, (short) plugin.meta);
             ItemMeta itemmeta = items.getItemMeta();
             itemmeta.setDisplayName("§2§l[§f段ボール§6箱§2§l]§7(右クリック)§r");
             List<String> k = new ArrayList<String>();
@@ -219,11 +240,19 @@ public class MDVData {
                     ",'" + list[7] + "'" +
                     ",'" + list[8] + "' );";
             mysql.execute(sql);
+            LogManager.createLog(LogManager.Category.sendCodBox,
+                    tags,
+                    "send cod box (OtherPlugin)",
+                    "OtherPlugin",
+                    sendername,
+                    destination.toString(),
+                    Bukkit.getOfflinePlayer(destination).getName(),daibiki,itemlist);
             if(Bukkit.getPlayer(destination)!=null){
                 sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました！!§f§l(クリック)","/mdv check","/mdv check");
             }
         });
     }
+
 
     public static void Gettrue(UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
@@ -294,6 +323,7 @@ public class MDVData {
                             p.getInventory().addItem(box);
                             Gettrue(tag);
                             loadBox(box, tag);
+                            LogManager.createLog(LogManager.Category.getBox,tag.toString(),"get box",null,null,p.getUniqueId().toString(),p.getName(),0,null);
                         }
                         rss.close();
                     } catch (NullPointerException | SQLException e1) {
@@ -423,32 +453,33 @@ public class MDVData {
         getitems.remove(item);
     }
 
-    public static void getItemCheck(Player p,UUID tag){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
-            ResultSet rs = mysql.query(sql);
-            if (rs == null) {
-                mysql.close();
-                return;
-            }
-            try {
-                if (rs.next()) {
-                    boolean cod = rs.getBoolean("cod");
-                    if(cod){
-                        sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(ここをクリック!)","§cクリックで支払い!","/mdv unlock");
-                        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE ,1.0F,1.0F);
-                    }else{
-                        getItem(p,tag);
-                    }
-                }
-                rs.close();
-            } catch (NullPointerException | SQLException e1) {
-                e1.printStackTrace();
-                return;
-            }
+    synchronized public static void getItemCheck(Player p,UUID tag){
+        String sql = "SELECT * FROM boxs WHERE tag = '" + tag.toString() + "';";
+        ResultSet rs = mysql.query(sql);
+        if (rs == null) {
             mysql.close();
-        });
+            return;
+        }
+        try {
+            if (rs.next()) {
+                boolean cod = rs.getBoolean("cod");
+                if(cod){
+                    sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(ここをクリック!)","§cクリックで支払い!","/mdv unlock");
+                    p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE ,1.0F,1.0F);
+                }else{
+                    getItem(p,tag);
+                }
+            }
+            rs.close();
+        } catch (NullPointerException | SQLException e1) {
+            e1.printStackTrace();
+            return;
+        }
+        mysql.close();
     }
+
+
+
 
     synchronized public static void unLockBox(Player p,UUID tag){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
@@ -523,57 +554,67 @@ public class MDVData {
                         String result = rs.getString("box");
                         ItemStack box = itemFromBase64(result);
                         unloadBox(box);
+                        ArrayList<ItemStack> itemlist = new ArrayList<>();
                         //one item
                         String result1 = rs.getString("one");
                         ItemStack item1 = itemFromBase64(result1);
+                        itemlist.add(item1);
                         if(item1 != null) {
                             p.getInventory().addItem(item1);
                         }
                         //two item
                         String result2 = rs.getString("two");
                         ItemStack item2 = itemFromBase64(result2);
+                        itemlist.add(item2);
                         if(item2 != null) {
                             p.getInventory().addItem(item2);
                         }
                         //three item
                         String result3 = rs.getString("three");
                         ItemStack item3 = itemFromBase64(result3);
+                        itemlist.add(item3);
                         if(item3 != null) {
                             p.getInventory().addItem(item3);
                         }
                         //four item
                         String result4 = rs.getString("four");
                         ItemStack item4 = itemFromBase64(result4);
+                        itemlist.add(item4);
                         if(item4 != null) {
                             p.getInventory().addItem(item4);
                         }
                         //five item
                         String result5 = rs.getString("five");
                         ItemStack item5 = itemFromBase64(result5);
+                        itemlist.add(item5);
                         if(item5 != null) {
                             p.getInventory().addItem(item5);
                         }
                         //six item
                         String result6 = rs.getString("six");
                         ItemStack item6 = itemFromBase64(result6);
+                        itemlist.add(item6);
                         if(item6 != null) {
                             p.getInventory().addItem(item6);
                         }
                         //seven iteme
                         String result7 = rs.getString("seven");
                         ItemStack item7 = itemFromBase64(result7);
+                        itemlist.add(item7);
                         if(item7 != null) {
                             p.getInventory().addItem(item7);
                         }
                         //eight item
                         String result8 = rs.getString("eight");
                         ItemStack item8 = itemFromBase64(result8);
+                        itemlist.add(item8);
                         if(item8!= null) {
                             p.getInventory().addItem(item8);
                         }
                         //nine item
                         String result9 = rs.getString("nine");
                         ItemStack item9 = itemFromBase64(result9);
+                        itemlist.add(item9);
                         if(item9 != null) {
                             p.getInventory().addItem(item9);
                         }
@@ -585,8 +626,14 @@ public class MDVData {
                             if (Bukkit.getPlayer(sender) != null) {
                                 Bukkit.getPlayer(sender).sendMessage(plugin.prefix + "§e§l" + p.getDisplayName() + "さんが§a§lあなたの段ボールを開けました。");
                                 Bukkit.getPlayer(sender).playSound(Bukkit.getPlayer(sender).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+                                LogManager.createLog(LogManager.Category.openBox,tag.toString(),"open box",rs.getString("sender"),Bukkit.getPlayer(sender).getName(),p.getUniqueId().toString(),p.getName(),0,itemlist);
+                            }else{
+                                LogManager.createLog(LogManager.Category.openBox,tag.toString(),"open box",rs.getString("sender"),Bukkit.getOfflinePlayer(sender).getName(),p.getUniqueId().toString(),p.getName(),0,itemlist);
                             }
                         }catch (IllegalArgumentException e){
+                            LogManager.createLog(LogManager.Category.openBox,tag.toString(),"open box",rs.getString("sender"),"Empty",p.getUniqueId().toString(),p.getName(),0,itemlist);
+                            rs.close();
+                            mysql.close();
                             return;
                         }
                     }
@@ -682,10 +729,8 @@ public class MDVData {
     }
 
     public static void removeBox(UUID tag){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             String sql = "DELETE FROM boxs WHERE tag = '" + tag.toString() + "';";
             mysql.execute(sql);
-        });
     }
 
     public static void createUser(UUID uuid){

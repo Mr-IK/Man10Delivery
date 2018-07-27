@@ -68,6 +68,27 @@ public class MySQLManager {
                 "uuid varchar(40)," +
                 "offline_bal double" +
                 ");");
+        execute("create table if not exists logs(" +
+                "id int auto_increment not null primary key," +
+                "time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "category varchar(40)," +
+                "tag varchar(40)," +
+                "memo text," +
+                "from_uuid varchar(40),"+
+                "from_name varchar(16),"+
+                "to_uuid varchar(40),"+
+                "to_name varchar(16),"+
+                "cod double," +
+                "one text," +
+                "two text," +
+                "three text," +
+                "four text," +
+                "five text," +
+                "six text," +
+                "seven text," +
+                "eight text," +
+                "nine text" +
+                ");");
     }
 
     /////////////////////////////////

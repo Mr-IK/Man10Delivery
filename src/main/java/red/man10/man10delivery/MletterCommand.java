@@ -1,6 +1,7 @@
 package red.man10.man10delivery;
 
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -73,6 +74,17 @@ public class MletterCommand implements CommandExecutor {
             item.setItemMeta(meta);
             p.getInventory().addItem(item);
             plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(),plugin.fee,TransactionCategory.TAX,TransactionType.FEE,"mletter fee");
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        LogManager.createLog(LogManager.Category.createLetter, null,
+                                "create letter",
+                                p.getUniqueId().toString(),
+                                p.getName(),
+                                null,
+                                null,
+                                0,
+                                null
+                        );
+            });
             p.sendMessage(plugin.prefix + "§a手紙作成完了！");
             return true;
         }

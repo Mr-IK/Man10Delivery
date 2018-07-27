@@ -20,4 +20,11 @@ public class MDVAPI {
         return MDVData.containUser(uuid);
     }
 
+    public static boolean createLog(String category,String tag,String memo,
+                                    String fromuuid,String fromname,
+                                    String touuid,String toname,
+                                    double cod,ArrayList<ItemStack> items){
+        return createLog(category,tag,"Other Plugin -> ("+memo+")",fromuuid,fromname,touuid,toname,cod,items);
+    }
+
 }

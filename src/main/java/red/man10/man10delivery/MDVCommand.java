@@ -109,9 +109,7 @@ public class MDVCommand implements CommandExecutor {
                 int meta = p.getInventory().getItemInMainHand().getDurability();
                 plugin.box = box;
                 plugin.meta = meta;
-                plugin.config.set("box_material",box.name());
-                plugin.config.set("box_meta",meta);
-                plugin.saveConfig();
+                plugin.setMaterial(box.name(),meta);
                 p.sendMessage(plugin.prefix + "§a段ボールアイテムを "+box.name()+" ("+meta+") に設定しました。");
                 return true;
             }else if(args[0].equalsIgnoreCase("help")){
@@ -132,7 +130,7 @@ public class MDVCommand implements CommandExecutor {
                     MDVData.sendHoverText(p, "§c§l/mdv setbox §f§l: ボックスのアイテムを手に持ったアイテムに設定する", "§aクリックでチャットに打ち込む", "/mdv setbox");
                     MDVData.sendSuggestCommand(p, "§c§l/mdv fee [金額] §f§l: [金額]に手数料を設定", "§aクリックでチャットに打ち込む", "/mdv fee ");
                     p.sendMessage("§c§l/mdv reboot : システムを再起動します。(注意して実行してください。)");
-                    p.sendMessage("§cv3.8");
+                    p.sendMessage("§cv3.9");
                 }
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
                 return true;
@@ -264,8 +262,7 @@ public class MDVCommand implements CommandExecutor {
                     return true;
                 }
                 plugin.fee = fee;
-                plugin.config.set("fee",fee);
-                plugin.saveConfig();
+                plugin.setFee(fee);
                 p.sendMessage(plugin.prefix + "§a手数料を §e$"+fee+" §aに設定しました。");
                 return true;
             }

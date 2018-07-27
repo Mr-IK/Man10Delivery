@@ -78,4 +78,15 @@ public final class Man10Delivery extends JavaPlugin {
         Bukkit.broadcastMessage(prefix+"§a§lヤマントシステム リブート完了。");
     }
 
+    public void setFee(int fee){
+        getConfig().set("fee",fee);
+        saveConfig();
+    }
+
+    public void setMaterial(String material,int meta){
+        getConfig().set("box_material",material);
+        getConfig().set("box_meta",meta);
+        saveConfig();
+    }
+
 }

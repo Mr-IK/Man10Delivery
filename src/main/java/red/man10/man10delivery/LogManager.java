@@ -337,4 +337,60 @@ public class LogManager {
         return loglist;
     }
 
+    public static ArrayList<Log> getLogfromall(){
+        String sql = "SELECT * FROM logs ;";
+        ResultSet rs = MDVData.mysql.query(sql);
+        ArrayList<Log> loglist = new ArrayList<>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    ArrayList<ItemStack> list = new ArrayList<>();
+                    if(!rs.getString("one").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("one")));
+                    }
+                    if(!rs.getString("two").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("two")));
+                    }
+                    if(!rs.getString("three").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("three")));
+                    }
+                    if(!rs.getString("four").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("four")));
+                    }
+                    if(!rs.getString("five").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("five")));
+                    }
+                    if(!rs.getString("six").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("six")));
+                    }
+                    if(!rs.getString("seven").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("seven")));
+                    }
+                    if(!rs.getString("eight").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("eight")));
+                    }
+                    if(!rs.getString("nine").equalsIgnoreCase("Empty")) {
+                        list.add(MDVData.itemFromBase64(rs.getString("nine")));
+                    }
+                    Log log = new Log(rs.getInt("id"),rs.getString("category"),rs.getString("tag"),
+                            rs.getString("time"),
+                            rs.getString("memo"),
+                            rs.getString("from_uuid"),
+                            rs.getString("from_name"),
+                            rs.getString("to_uuid"),
+                            rs.getString("to_name"),
+                            list,
+                            rs.getDouble("cod")
+                    );
+                    loglist.add(log);
+                }
+            } catch (SQLException e) {
+                MDVData.mysql.close();
+                return loglist;
+            }
+        }
+        MDVData.mysql.close();
+        return loglist;
+    }
+
 }

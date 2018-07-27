@@ -1,6 +1,5 @@
 package red.man10.man10delivery;
 
-import com.sun.tools.corba.se.idl.InterfaceGen;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,9 +28,28 @@ public class LogCommand implements CommandExecutor {
             return true;
         }
         if(args.length == 0){
-            p.sendMessage("§a/mdvlog [id/fromname/toname/tag] [val] §e: ログを見る");
+            p.sendMessage("§a/mdvlog [id/fromname/toname/tag/all] [val] §e: ログを見る");
             p.sendMessage("§a/mdvlog viewitem [id] §e: ログを見る");
             return true;
+        }else if(args.length == 1){
+            if(args[0].equalsIgnoreCase("all")){
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    ArrayList<LogManager.Log> loglist = LogManager.getLogfromall();
+                    if(loglist.size()==0){
+                        p.sendMessage(plugin.prefix + "§cログを発見できなかった");
+                        return;
+                    }
+                    for(int i = (loglist.size()-1); i >(loglist.size() - 15); i--){
+                        if(i < 0){
+                            break;
+                        }
+                        LogManager.Log log = loglist.get(i);
+                        p.sendMessage(plugin.prefix+"§e"+log.id+": §b"+log.category+" §6"+log.time+" §a"+log.fromname+" -> "+log.toname+" §e"+log.cod+"円");
+                    }
+                    p.sendMessage(plugin.prefix+"§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
+                });
+                return true;
+            }
         }else if(args.length == 2){
             if(args[0].equalsIgnoreCase("id")){
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -159,6 +177,8 @@ public class LogCommand implements CommandExecutor {
             }
 
         }
+        p.sendMessage("§a/mdvlog [id/fromname/toname/tag/all] [val] §e: ログを見る");
+        p.sendMessage("§a/mdvlog viewitem [id] §e: ログを見る");
         return true;
     }
 }

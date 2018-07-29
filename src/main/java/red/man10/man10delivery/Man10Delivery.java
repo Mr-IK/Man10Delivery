@@ -13,6 +13,7 @@ public final class Man10Delivery extends JavaPlugin {
 
     String prefix = "§2§l[§f白猫§6ヤマント§2§l]§r";
     Man10VaultAPI vault;
+    QuestManager quest;
     MySQLManager mysql;
     FileConfiguration config;
     MDVEvent event;
@@ -37,6 +38,7 @@ public final class Man10Delivery extends JavaPlugin {
         meta = config.getInt("box_meta");
         vault = new Man10VaultAPI("Man10Delivery");
         mysql = new MySQLManager(this,"Man10Delivery");
+        quest = new QuestManager(this);
         MDVData.loadEnable(this,mysql);
         LogManager.loadEnable(this);
         getCommand("mdv").setExecutor(new MDVCommand(this));

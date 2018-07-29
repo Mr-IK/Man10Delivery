@@ -1,6 +1,7 @@
 fee: 10000
 box_material: DIAMOND_HOE
 box_meta: 48
+quest: 0
 mysql:
   host: localhost
   port: 3306

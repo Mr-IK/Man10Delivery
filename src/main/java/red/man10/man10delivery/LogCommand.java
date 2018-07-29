@@ -30,23 +30,37 @@ public class LogCommand implements CommandExecutor {
         if(args.length == 0){
             p.sendMessage("§a/mdvlog [id/fromname/toname/tag/all] [val] §e: ログを見る");
             p.sendMessage("§a/mdvlog viewitem [id] §e: ログを見る");
+            p.sendMessage("§a/mdvlog createQuest §e: なんでクエスト？!作成");
+            p.sendMessage("§a/mdvlog openQuest §e: なんでクエスト？!オープン");
             return true;
         }else if(args.length == 1){
-            if(args[0].equalsIgnoreCase("all")){
+            if(args[0].equalsIgnoreCase("all")) {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                     ArrayList<LogManager.Log> loglist = LogManager.getLogfromall();
-                    if(loglist.size()==0){
+                    if (loglist.size() == 0) {
                         p.sendMessage(plugin.prefix + "§cログを発見できなかった");
                         return;
                     }
-                    for(int i = (loglist.size()-1); i >(loglist.size() - 15); i--){
-                        if(i < 0){
+                    for (int i = (loglist.size() - 1); i > (loglist.size() - 15); i--) {
+                        if (i < 0) {
                             break;
                         }
                         LogManager.Log log = loglist.get(i);
-                        p.sendMessage(plugin.prefix+"§e"+log.id+": §b"+log.category+" §6"+log.time+" §a"+log.fromname+" -> "+log.toname+" §e"+log.cod+"円");
+                        p.sendMessage(plugin.prefix + "§e" + log.id + ": §b" + log.category + " §6" + log.time + " §a" + log.fromname + " -> " + log.toname + " §e" + log.cod + "円");
                     }
-                    p.sendMessage(plugin.prefix+"§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
+                    p.sendMessage(plugin.prefix + "§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
+                });
+                return true;
+            }else if(args[0].equalsIgnoreCase("createQuest")){
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.quest.createQuest();
+                    p.sendMessage("§e作ったぜ。");
+                });
+                return true;
+            }else if(args[0].equalsIgnoreCase("openQuest")){
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.quest.openQuest(p.getName(),p.getUniqueId());
+                    p.sendMessage("§e開放したぜ。");
                 });
                 return true;
             }
@@ -130,38 +144,38 @@ public class LogCommand implements CommandExecutor {
                     p.sendMessage(plugin.prefix+"§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
                 });
                 return true;
-            }else if(args[0].equalsIgnoreCase("viewitem")){
+            }else if(args[0].equalsIgnoreCase("viewitem")) {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                     int id = -1;
-                    try{
+                    try {
                         id = Integer.parseInt(args[1]);
-                    }catch (NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         p.sendMessage(plugin.prefix + "§cidならvalは数字で入力！");
                         return;
                     }
-                    if(id <= 0){
+                    if (id <= 0) {
                         p.sendMessage(plugin.prefix + "§cidならvalは1以上の数字で入力！");
                         return;
                     }
                     ArrayList<LogManager.Log> loglist = LogManager.getLogfromid(id);
-                    if(loglist.size()==0){
+                    if (loglist.size() == 0) {
                         p.sendMessage(plugin.prefix + "§cログを発見できなかった");
                         return;
                     }
                     int ids = 0;
                     ArrayList<ItemStack> itemlist = new ArrayList<>();
-                    for(int i = (loglist.size()-1); i >(loglist.size() - 15); i--){
-                        if(i < 0){
+                    for (int i = (loglist.size() - 1); i > (loglist.size() - 15); i--) {
+                        if (i < 0) {
                             break;
                         }
                         LogManager.Log log = loglist.get(i);
                         ids = log.id;
                         itemlist = log.items;
-                        p.sendMessage(plugin.prefix+"§e"+log.id+": §b"+log.category+" §6"+log.time+" §a"+log.fromname+" -> "+log.toname+" §e"+log.cod+"円");
+                        p.sendMessage(plugin.prefix + "§e" + log.id + ": §b" + log.category + " §6" + log.time + " §a" + log.fromname + " -> " + log.toname + " §e" + log.cod + "円");
                     }
-                    p.sendMessage(plugin.prefix+"§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
-                    Inventory inv = Bukkit.createInventory(null,9,"view中 id:"+ ids);
-                    if(itemlist.size() != 0) {
+                    p.sendMessage(plugin.prefix + "§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
+                    Inventory inv = Bukkit.createInventory(null, 9, "view中 id:" + ids);
+                    if (itemlist.size() != 0) {
                         for (ItemStack item : itemlist) {
                             if (item != null) {
                                 inv.addItem(item);
@@ -169,7 +183,7 @@ public class LogCommand implements CommandExecutor {
                         }
                         plugin.pstats3.put(p.getUniqueId(), "viewLogitem");
                         p.openInventory(inv);
-                    }else{
+                    } else {
                         p.sendMessage(plugin.prefix + "§cアイテムがこのlogには存在しなかった");
                     }
                 });

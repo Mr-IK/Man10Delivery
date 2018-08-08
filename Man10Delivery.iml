@@ -39,14 +39,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Maven: Man10Quest:red.man10:1.0">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/Man10Quest-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
 </module>

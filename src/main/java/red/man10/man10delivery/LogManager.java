@@ -19,6 +19,7 @@ public class LogManager {
         static String createLetter = "create_letter";
         static String getBox = "get_box";
         static String sendCodBox = "send_cod_box";
+        static String sendTimeBox = "send_time_box";
     }
 
     static class Log{

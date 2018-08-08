@@ -89,6 +89,13 @@ public class MySQLManager {
                 "eight text," +
                 "nine text" +
                 ");");
+        execute("create table if not exists timeboxs(" +
+                "id int auto_increment not null primary key," +
+                "time DATETIME," +
+                "sender varchar(40)," +
+                "uuid varchar(40)," +
+                "tag varchar(40)," +
+                "item text);");
     }
 
     /////////////////////////////////
@@ -140,6 +147,13 @@ public class MySQLManager {
 
         this.MySQL.close(this.con);
         return Boolean.valueOf(this.connected);
+    }
+
+    //////////////////////////////////////////
+    //         接続確認
+    //////////////////////////////////////////
+    public boolean connectCheck(){
+       return Connect(HOST,DB,USER,PASS,PORT);
     }
 
     ////////////////////////////////

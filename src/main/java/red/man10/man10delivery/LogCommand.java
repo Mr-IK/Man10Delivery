@@ -30,8 +30,6 @@ public class LogCommand implements CommandExecutor {
         if(args.length == 0){
             p.sendMessage("§a/mdvlog [id/fromname/toname/tag/all] [val] §e: ログを見る");
             p.sendMessage("§a/mdvlog viewitem [id] §e: ログを見る");
-            p.sendMessage("§a/mdvlog createQuest §e: なんでクエスト？!作成");
-            p.sendMessage("§a/mdvlog openQuest §e: なんでクエスト？!オープン");
             return true;
         }else if(args.length == 1){
             if(args[0].equalsIgnoreCase("all")) {
@@ -49,18 +47,6 @@ public class LogCommand implements CommandExecutor {
                         p.sendMessage(plugin.prefix + "§e" + log.id + ": §b" + log.category + " §6" + log.time + " §a" + log.fromname + " -> " + log.toname + " §e" + log.cod + "円");
                     }
                     p.sendMessage(plugin.prefix + "§c詳しいログはdbにアクセスできる人にidで検索を頼んでください。");
-                });
-                return true;
-            }else if(args[0].equalsIgnoreCase("createQuest")){
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    plugin.quest.createQuest();
-                    p.sendMessage("§e作ったぜ。");
-                });
-                return true;
-            }else if(args[0].equalsIgnoreCase("openQuest")){
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    plugin.quest.openQuest(p.getName(),p.getUniqueId());
-                    p.sendMessage("§e開放したぜ。");
                 });
                 return true;
             }

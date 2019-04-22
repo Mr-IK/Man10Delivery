@@ -55,7 +55,7 @@ public final class Man10Delivery extends JavaPlugin {
     }
 
     public void systemReboot(){
-        Bukkit.broadcastMessage(prefix+"§7§lヤマントシステム §c§lリブート中…");
+        Bukkit.broadcastMessage(prefix+"§7§lヤマントシステムV5 §c§lリブート中…");
         power = false;
         ac.reboot();
         Bukkit.broadcastMessage(prefix+"§7§lヤマント営業停止完了。");
@@ -75,7 +75,7 @@ public final class Man10Delivery extends JavaPlugin {
         Bukkit.broadcastMessage(prefix+"§7§lヤマントの§a§l営業を再開中…");
         power = true;
         Bukkit.broadcastMessage(prefix+"§a§l再開完了。");
-        Bukkit.broadcastMessage(prefix+"§a§lヤマントシステム リブート完了。");
+        Bukkit.broadcastMessage(prefix+"§a§lヤマントシステムV5 リブート完了。");
     }
 
     public void setFee(int fee){

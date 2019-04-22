@@ -85,33 +85,6 @@ public class MDVData {
         });
     }
 
-    public static void addBox(UUID sender, UUID destination,ItemStack item,UUID tag,int days){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            if(!sqlConnectSafety()){
-                return;
-            }
-            String items = itemToBase64(item);
-            String tags = tag.toString();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(new Date());
-            calendar.add(Calendar.DAY_OF_MONTH,days);
-            Date date = calendar.getTime();
-            String sql = "INSERT INTO timeboxs (time,sender,uuid,tag,item) VALUES ('"+convertSQLDate(date)+"','" + sender.toString() + "','" + destination.toString() + "'" +
-                    ",'" + tags + "'" +
-                    ",'" + items + "');";
-            mysql.execute(sql);
-            ArrayList<ItemStack> itemlist = new ArrayList<>();
-            itemlist.add(item);
-            LogManager.createLog(LogManager.Category.sendTimeBox,
-                    tags,
-                    "send time box",
-                    sender.toString(),
-                    Bukkit.getOfflinePlayer(sender).getName(),
-                    destination.toString(),
-                    Bukkit.getOfflinePlayer(destination).getName(),0,itemlist);
-        });
-    }
-
     public static void addBox(UUID sender, UUID destination, ArrayList<ItemStack> itemlist,ItemStack box,UUID tag,Double cash){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             if(!sqlConnectSafety()){
@@ -222,33 +195,6 @@ public class MDVData {
             if(Bukkit.getPlayer(destination)!=null){
                 sendHoverText(Bukkit.getPlayer(destination),plugin.prefix+"§a§l§n荷物が届きました!!§f§l(クリック)","/mdv check","/mdv check");
             }
-        });
-    }
-
-    public static void addBox(String sendername, UUID destination,ItemStack item,UUID tag,int days){
-        Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            if(!sqlConnectSafety()){
-                return;
-            }
-            String items = itemToBase64(item);
-            String tags = tag.toString();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(new Date());
-            calendar.add(Calendar.DAY_OF_MONTH,days);
-            Date date = calendar.getTime();
-            String sql = "INSERT INTO timeboxs (time,sender,uuid,tag,item) VALUES ('"+convertSQLDate(date)+"','" + sendername + "','" + destination.toString() + "'" +
-                    ",'" + tags + "'" +
-                    ",'" + items + "');";
-            mysql.execute(sql);
-            ArrayList<ItemStack> itemlist = new ArrayList<>();
-            itemlist.add(item);
-            LogManager.createLog(LogManager.Category.sendTimeBox,
-                    tags,
-                    "send time box (OtherPlugin)",
-                    "OtherPlugin",
-                    sendername,
-                    destination.toString(),
-                    Bukkit.getOfflinePlayer(destination).getName(),0,itemlist);
         });
     }
 
@@ -398,8 +344,6 @@ public class MDVData {
         p.sendMessage(plugin.prefix + "§eセンターに問合せ中です…§6§kaa");
         int kensuu = 0;
         UUID uuid = p.getUniqueId();
-        //時空をチェックしtimeboxを受け取る
-        checkPlayerTimeBox(p);
         //代引・通常boxを受け取る
         String sql = "SELECT * FROM boxs WHERE uuid = '" + uuid.toString() + "' AND gets = " + false + ";";
         ResultSet rs = mysql.query(sql);
@@ -449,59 +393,6 @@ public class MDVData {
         p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の荷物を受け取りました。");
     }
 
-    public static void checkPlayerTimeBox(Player p){
-        String sql = "SELECT * FROM timeboxs WHERE uuid = '" + p.getUniqueId().toString() + "' AND time <  NOW() ;";
-        ResultSet rs = mysql.query(sql);
-        int kensuu = 0;
-        if (rs == null) {
-            mysql.close();
-            p.sendMessage(plugin.prefix +"§e時間指定された荷物はありませんでした。");
-            return;
-        }
-        try {
-            while (rs.next()) {
-                if (p.getInventory().firstEmpty() == -1) {
-                    p.sendMessage(plugin.prefix + "§cインベントリがいっぱいになったので中止しました。");
-                    mysql.close();
-                    p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の時間指定された荷物を受け取りました。");
-                    return;
-                }
-                kensuu++;
-                UUID tag = UUID.fromString(rs.getString("tag"));
-                String sqls = "SELECT * FROM timeboxs WHERE tag = '" + tag.toString() + "';";
-                ResultSet rss = mysql.query(sqls);
-                if (rss == null) {
-                    mysql.close();
-                    return;
-                }
-                try {
-                    if (rss.next()) {
-                        String result = rss.getString("item");
-                        ItemStack item = itemFromBase64(result);
-                        p.getInventory().addItem(item);
-                        LogManager.createLog(LogManager.Category.getBox,tag.toString(),"get item",null,null,p.getUniqueId().toString(),p.getName(),0,null);
-                    }
-                    rss.close();
-                } catch (NullPointerException | SQLException e1) {
-                    e1.printStackTrace();
-                    return;
-                }
-                mysql.close();
-                deleteTimeBox(tag);
-            }
-            rs.close();
-        } catch (NullPointerException | SQLException e1) {
-            e1.printStackTrace();
-            return;
-        }
-        mysql.close();
-        p.sendMessage(plugin.prefix + "§e" + kensuu + "§6個の時間指定された荷物を受け取りました。");
-    }
-
-    public static void deleteTimeBox(UUID tag){
-        String sql = "DELETE FROM timeboxs WHERE tag = '" + tag.toString() + "';";
-        mysql.execute(sql);
-    }
 
 
     public static void GetPlayerInfo(Player p,UUID uuid){
@@ -631,6 +522,10 @@ public class MDVData {
             if (rs.next()) {
                 boolean cod = rs.getBoolean("cod");
                 if(cod){
+                    if(rs.getString("sender").equalsIgnoreCase(p.getUniqueId().toString())){
+                        p.sendMessage(plugin.prefix+"§a§lこの段ボールは代引きですが、作った本人のため無料で開きます！");
+                        getItem(p,tag);
+                    }
                     sendHoverText(p,plugin.prefix + "§c§lこの段ボールは代引です。支払いますか？§f§l(ここをクリック!)","§cクリックで支払い!","/mdv unlock");
                     p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE ,1.0F,1.0F);
                 }else{
@@ -900,13 +795,18 @@ public class MDVData {
             mysql.execute(sql);
     }
 
-    public static void createUser(UUID uuid){
+    public static void createUser(String name,UUID uuid){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+            String sql = "SELECT * FROM userstwo WHERE uuid = '" + uuid.toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs != null) {
                 try {
                     if(rs.next()) {
+                        if(rs.getString("name").equalsIgnoreCase(name)) {
+                            String sqls = "UPDATE userstwo SET name = '" + name + "' where uuid = '" + uuid.toString() + "';";
+                            mysql.execute(sqls);
+                        }
+                        rs.close();
                         mysql.close();
                         return;
                     }
@@ -916,14 +816,14 @@ public class MDVData {
                 }
             }
             mysql.close();
-            String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',0.0);";
+            String sqls = "INSERT INTO userstwo (name,uuid,offline_bal) VALUES ('"+name+"','" + uuid.toString() + "',0.0);";
             mysql.execute(sqls);
         });
     }
 
-    public static void createUser(UUID uuid,double bal){
+    public static void createUser(String name,UUID uuid,double bal){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-            String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+            String sql = "SELECT * FROM userstwo WHERE uuid = '" + uuid.toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs != null) {
                 try {
@@ -937,14 +837,14 @@ public class MDVData {
                 }
             }
             mysql.close();
-            String sqls = "INSERT INTO users (uuid,offline_bal) VALUES ('" + uuid.toString() + "',"+bal+");";
+            String sqls = "INSERT INTO userstwotwo (name,uuid,offline_bal) VALUES ('"+name+"','" + uuid.toString() + "',"+bal+");";
             mysql.execute(sqls);
         });
     }
 
     //使う側を絶対にスレッド化すること！！
     public static boolean containUser(UUID uuid){
-        String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+        String sql = "SELECT * FROM userstwotwo WHERE uuid = '" + uuid.toString() + "';";
         ResultSet rs = mysql.query(sql);
         if (rs != null) {
             try {
@@ -961,19 +861,39 @@ public class MDVData {
         return false;
     }
 
+    //使う側を絶対にスレッド化すること！！
+    public static UUID containUser(String name){
+        String sql = "SELECT * FROM userstwotwo WHERE name = '" + name + "';";
+        ResultSet rs = mysql.query(sql);
+        if (rs != null) {
+            try {
+                if(rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    mysql.close();
+                    return uuid;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        mysql.close();
+        return null;
+    }
+
     public static void addOfflineBal(UUID uuid,double bal){
         Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
             Bukkit.getScheduler().runTaskAsynchronously(MDVData.plugin, () -> {
-                String sql = "SELECT * FROM users WHERE uuid = '" + uuid.toString() + "';";
+                String sql = "SELECT * FROM userstwo WHERE uuid = '" + uuid.toString() + "';";
                 ResultSet rs = mysql.query(sql);
                 if (rs == null) {
-                    createUser(uuid,bal);
+                    createUser("not found",uuid,bal);
                     mysql.close();
                     return;
                 }
                 try {
                     if (rs.next()) {
-                        String sqls = "UPDATE users SET offline_bal = offline_bal+"+bal+" where uuid = '"+uuid.toString()+"';";
+                        String sqls = "UPDATE userstwo SET offline_bal = offline_bal+"+bal+" where uuid = '"+uuid.toString()+"';";
                         mysql.execute(sqls);
                     }
                     rs.close();
@@ -988,24 +908,24 @@ public class MDVData {
     }
 
     synchronized public static void getOfflineBal(Player p){
-            String sql = "SELECT * FROM users WHERE uuid = '" + p.getUniqueId().toString() + "';";
+            String sql = "SELECT * FROM userstwo WHERE uuid = '" + p.getUniqueId().toString() + "';";
             ResultSet rs = mysql.query(sql);
             if (rs == null) {
                 p.sendMessage(plugin.prefix+"§e§l0円 引き出されました。");
-                createUser(p.getUniqueId());
+                createUser("not found",p.getUniqueId());
                 mysql.close();
                 return;
             }
             try {
                 if (rs.next()) {
                     double addbal = rs.getDouble("offline_bal");
-                    String sqls = "UPDATE users SET offline_bal = 0.0 where uuid = '"+p.getUniqueId().toString()+"';";
+                    String sqls = "UPDATE userstwo SET offline_bal = 0.0 where uuid = '"+p.getUniqueId().toString()+"';";
                     mysql.execute(sqls);
                     MDVData.plugin.vault.givePlayerMoney(p.getUniqueId(),addbal,TransactionType.UNKNOWN,"mdv get cash");
                     p.sendMessage(plugin.prefix+"§e§l"+new JPYBalanceFormat(addbal).getString() +"円 引き出されました。");
                 }else{
                     p.sendMessage(plugin.prefix+"§e§l0円 引き出されました。");
-                    createUser(p.getUniqueId());
+                    createUser("not found",p.getUniqueId());
                 }
                 rs.close();
             } catch (NullPointerException | SQLException e1) {

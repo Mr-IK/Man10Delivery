@@ -125,7 +125,7 @@ public class MDVEvent implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
-        MDVData.createUser(e.getPlayer().getUniqueId());
+        MDVData.createUser(e.getPlayer().getName(),e.getPlayer().getUniqueId());
         MDVData.LoginContainBox(e.getPlayer());
     }
 

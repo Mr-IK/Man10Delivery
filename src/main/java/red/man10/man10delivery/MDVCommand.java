@@ -147,7 +147,6 @@ public class MDVCommand implements CommandExecutor {
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
                 MDVData.sendSuggestCommand(p, "§e§l/mdv [player名] §f§l: プレイヤーにアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv ");
                 MDVData.sendSuggestCommand(p, "§e§l/mdv cod [player名] [代引金額]§f§l: プレイヤーに代引でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv cod ");
-                MDVData.sendSuggestCommand(p, "§e§l/mdv time [player名] [何日後に送るか]§f§l: 日付指定でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv time ");
                 MDVData.sendHoverText(p, "§e§l/mdv check §f§l: 送られてきたボックスを受け取る", "§aクリックで受け取る", "/mdv check");
                 MDVData.sendSuggestCommand(p, "§e§l/mdv autocheck on/off §f§l: 5分ごとにBOXが来てるか通知", "§aクリックでチャットに打ち込む", "/mdv autocheck ");
                 MDVData.sendHoverText(p, "§e§l/mdv unlock §f§l: 代引のロックを解除する", "§a段ボールを持ちクリックで解除", "/mdv unlock");
@@ -163,7 +162,7 @@ public class MDVCommand implements CommandExecutor {
                     MDVData.sendHoverText(p, "§c§l/mdv setbox §f§l: ボックスのアイテムを手に持ったアイテムに設定する", "§aクリックでチャットに打ち込む", "/mdv setbox");
                     MDVData.sendSuggestCommand(p, "§c§l/mdv fee [金額] §f§l: [金額]に手数料を設定", "§aクリックでチャットに打ち込む", "/mdv fee ");
                     p.sendMessage("§c§l/mdv reboot : システムを再起動します。(注意して実行してください。)");
-                    p.sendMessage("§cv4.0");
+                    p.sendMessage("§cv5.0");
                 }
                 p.sendMessage("§b§l=============§f§lヤマント§e§lヘルプメニュー§b§l=============");
                 return true;
@@ -183,7 +182,6 @@ public class MDVCommand implements CommandExecutor {
             }else if (args[0].equalsIgnoreCase("send")) {
                 MDVData.sendSuggestCommand(p, "§e§l/mdv [player名] §f§l: プレイヤーにアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv ");
                 MDVData.sendSuggestCommand(p, "§e§l/mdv cod [player名] [代引金額]§f§l : プレイヤーに代引でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv cod ");
-                MDVData.sendSuggestCommand(p, "§e§l/mdv time [player名] [何日後に送るか]§f§l: 日付指定でアイテムを送る", "§aクリックでチャットに打ち込む", "/mdv time ");
                 return true;
             }else if (args[0].equalsIgnoreCase("cash")) {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> MDVData.getOfflineBal(p));
@@ -231,16 +229,17 @@ public class MDVCommand implements CommandExecutor {
                     return;
                 }
                 if (Bukkit.getPlayer(args[0]) == null) {
-                    if (!MDVData.containUser(Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
+                    UUID uuid = MDVData.containUser(args[0]);
+                    if (uuid==null) {
                         p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
                         return;
                     }
-                    if (Bukkit.getOfflinePlayer(args[0]).getUniqueId() == p.getUniqueId()) {
+                    if (uuid == p.getUniqueId()) {
                         p.sendMessage(plugin.prefix + "§c自分自身には送れません！");
                         return;
                     }
                     Inventory inv = Bukkit.createInventory(null, 9, "§0アイテムを入れて閉じると配達します");
-                    plugin.pstats.put(p.getUniqueId(), Bukkit.getOfflinePlayer(args[0]).getUniqueId());
+                    plugin.pstats.put(p.getUniqueId(),uuid);
                     p.openInventory(inv);
                 } else {
                     if (Bukkit.getPlayer(args[0]).getUniqueId() == p.getUniqueId()) {
@@ -260,9 +259,9 @@ public class MDVCommand implements CommandExecutor {
                     return true;
                 }
                 if (Bukkit.getPlayer(args[1]) == null) {
-                    UUID puuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
+                    UUID puuid = MDVData.containUser(args[1]);
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                        if (!MDVData.containUser(puuid)) {
+                        if (puuid == null) {
                             p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
                             return;
                         }
@@ -307,9 +306,9 @@ public class MDVCommand implements CommandExecutor {
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("cod")) {
                 if (Bukkit.getPlayer(args[1]) == null) {
-                    UUID puuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
+                    UUID puuid = MDVData.containUser(args[1]);
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                        if (!MDVData.containUser(puuid)) {
+                        if (puuid == null) {
                             p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
                             return;
                         }
@@ -355,59 +354,6 @@ public class MDVCommand implements CommandExecutor {
                     p.openInventory(inv);
                 }
                 return true;
-            }else if (args[0].equalsIgnoreCase("time")) {
-                int days;
-                try{
-                    days = Integer.parseInt(args[2]);
-                }catch (NumberFormatException e){
-                    p.sendMessage(plugin.prefix + "§c日付は数字で入力してください");
-                    return true;
-                }
-                if(days <= 0 || days >= 31){
-                    p.sendMessage(plugin.prefix + "§c日付は1～30で入力してください");
-                    return true;
-                }
-                if (Bukkit.getPlayer(args[1]) == null) {
-                    UUID puuid = Bukkit.getOfflinePlayer(args[1]).getUniqueId();
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                        if (!MDVData.containUser(puuid)) {
-                            p.sendMessage(plugin.prefix + "§cそのプレイヤーは一度もこのサーバーに入っていません！");
-                            return;
-                        }
-                        if(p.getInventory().getItemInMainHand().getAmount()==0){
-                            p.sendMessage(plugin.prefix + "§c送りたいアイテムを持ってください。");
-                            return;
-                        }
-                        if (plugin.vault.getBalance(p.getUniqueId()) < (plugin.fee*5)) {
-                            p.sendMessage(plugin.prefix + "§cお金が足りません！必要: "+new JPYBalanceFormat(plugin.fee*5).getString()+"円");
-                            return;
-                        }
-                        plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(), plugin.fee*5, TransactionCategory.TAX, TransactionType.FEE, "mdv timebox fee");
-                        ItemStack item = p.getInventory().getItemInMainHand();
-                        p.getInventory().setItemInMainHand(null);
-                        MDVData.addBox(p.getUniqueId(),puuid,item,UUID.randomUUID(),days);
-                        p.sendMessage(plugin.prefix + "§a送りました。");
-                    });
-                    return true;
-                } else {
-                    Player to = Bukkit.getPlayer(args[1]);
-                    if(p.getInventory().getItemInMainHand().getAmount()==0){
-                        p.sendMessage(plugin.prefix + "§c送りたいアイテムを持ってください。");
-                        return true;
-                    }
-                    if (plugin.vault.getBalance(p.getUniqueId()) < (plugin.fee*5)) {
-                        p.sendMessage(plugin.prefix + "§cお金が足りません！必要: "+new JPYBalanceFormat(plugin.fee*5).getString()+"円");
-                        return true;
-                    }
-                    plugin.vault.transferMoneyPlayerToCountry(p.getUniqueId(), plugin.fee*5, TransactionCategory.TAX, TransactionType.FEE, "mdv timebox fee");
-                    ItemStack item = p.getInventory().getItemInMainHand();
-                    p.getInventory().setItemInMainHand(null);
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                        MDVData.addBox(p.getUniqueId(), to.getUniqueId(), item, UUID.randomUUID(), days);
-                        p.sendMessage(plugin.prefix + "§a送りました。");
-                    });
-                    return true;
-                }
             }
         }
         Inventory inv = Bukkit.createInventory(null,9,plugin.prefix);

@@ -16,3 +16,11 @@ commands:
     description: Man10delivery
     usage: /<command>
     default: op
+  mtrade:
+    description: Man10delivery
+    usage: /<command>
+    default: op
+  trade:
+    description: Man10delivery
+    usage: /<command>
+    default: op

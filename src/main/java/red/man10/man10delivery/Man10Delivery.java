@@ -42,10 +42,13 @@ public final class Man10Delivery extends JavaPlugin {
         getCommand("mdv").setExecutor(new MDVCommand(this));
         getCommand("mdvlog").setExecutor(new LogCommand(this));
         getCommand("mletter").setExecutor(new MletterCommand(this));
+        getCommand("mtrade").setExecutor(new Man10TradeCommand(this));
+        getCommand("trade").setExecutor(new Man10TradeCommand(this));
         event = new MDVEvent(this);
         ac = new AutoCheck(this);
         ac.start();
         getServer().getPluginManager().registerEvents(event, this);
+        getServer().getPluginManager().registerEvents(new Man10TradeEvent(),this);
     }
 
     @Override

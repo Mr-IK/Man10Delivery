@@ -1,5 +1,6 @@
 package red.man10.man10delivery;
 
+import javafx.util.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,13 +11,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class Man10TradeCommand implements CommandExecutor {
 
     Man10Delivery plugin;
-    HashMap<Player,Player> pair = new HashMap<>();
+    private List<String> tradePair = new ArrayList<>();
 
     public Man10TradeCommand(Man10Delivery plugin) {
         this.plugin = plugin;
@@ -51,13 +53,14 @@ public class Man10TradeCommand implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("accept")){
-            for(Player key : pair.keySet()){
-                if (pair.get(key) == p){
-                    Bukkit.getLogger().info("trade start");
-                    openInventory(p,key);
+            for (String player : tradePair){
+                if (player.indexOf(p.getName()) >= 1){
+                    String[] s = player.split(",");
+                    openInventory(Bukkit.getPlayer(s[0]),Bukkit.getPlayer(s[1]));
                     return true;
                 }
             }
+
 
             p.sendMessage(plugin.prefix+"§eあなたにトレード申請をした人はいません");
             return true;
@@ -74,7 +77,9 @@ public class Man10TradeCommand implements CommandExecutor {
         return true;
     }
 
-    void checkTrade(Player p,Player pair){
+    private void checkTrade(Player p, Player pair){
+
+        tradePair.add(pair.getName()+","+p.getName());
 
         Bukkit.getScheduler().runTask(plugin, () -> {
 
@@ -88,71 +93,87 @@ public class Man10TradeCommand implements CommandExecutor {
                 Bukkit.getLogger().info(e.getMessage());
             }
 
-            if (!this.pair.containsKey(pair)){
-                pair.sendMessage("§e§l30秒経過したため、トレードがキャンセルされました");
-            }
 
         });
 
     }
 
-    void openInventory(Player p1,Player p2){
+    private void openInventory(Player p1, Player p2){
         Inventory inv = Bukkit.createInventory(null,54,"§e§lトレード");
 
-        ItemStack panel1 = new ItemStack(Material.STAINED_GLASS_PANE,1, (short) 0);
-        ItemMeta p1m = panel1.getItemMeta();
-        p1m.setDisplayName("");
-        panel1.setItemMeta(p1m);
+        ItemStack is = new ItemStack(Material.STAINED_GLASS_PANE,1);
+        ItemMeta meta = is.getItemMeta();
+        meta.setDisplayName("");
+        is.setItemMeta(meta);
 
-        ItemStack panel2 = new ItemStack(Material.STAINED_GLASS_PANE,1, (short) 5);
-        ItemMeta p2m = panel2.getItemMeta();
-        p2m.setDisplayName("§a§l完了");
-        panel2.setItemMeta(p2m);
-
-        ItemStack panel3 = new ItemStack(Material.STAINED_GLASS_PANE,1, (short) 14);
-        ItemMeta p3m = panel3.getItemMeta();
-        p3m.setDisplayName("§a§l取引中止(強制的に中止します)");
-        panel3.setItemMeta(p3m);
-
-        ItemStack panel4 = new ItemStack(Material.STAINED_GLASS_PANE,1, (short) 14);
-        ItemMeta p4m = panel4.getItemMeta();
-        p4m.setDisplayName("相手はまだ完了を押していません");
-        panel4.setItemMeta(p3m);
-
-        ItemStack money = new ItemStack(Material.BLAZE_POWDER,1,(short)0);
-        ItemMeta m = money.getItemMeta();
-        m.setDisplayName("§e§l10000$追加");
-        money.setItemMeta(m);
-
-        ItemStack moneyP = new ItemStack(Material.BLAZE_POWDER,1,(short)0);
-        ItemMeta mP = moneyP.getItemMeta();
-        mP.setDisplayName("§e§l0$");
-        moneyP.setItemMeta(mP);
-
-        ItemStack sign = new ItemStack(Material.SIGN,1,(short)0);
-        ItemMeta s = sign.getItemMeta();
-        s.setDisplayName("§e§l0$");
-        sign.setItemMeta(s);
-
-        int[] index = new int[]{5,14,23,32,37,38,39,40,41,42,43,44,45,50};
+        int[] index = new int[]{5,14,23,32,41,50};
 
         for(int i : index){
-            inv.setItem(i,panel1);
+            inv.setItem(i,is);
         }
 
-        inv.setItem(46,panel2);
-        inv.setItem(47,panel2);
-        inv.setItem(48,panel3);
-        inv.setItem(49,panel3);
-        inv.setItem(51,panel4);
-        inv.setItem(52,panel4);
-        inv.setItem(53,panel4);
-        inv.setItem(54,panel4);
-        inv.setItem(31,money);
-        inv.setItem(33,moneyP);
-        inv.setItem(30,sign);
+        is.setType(Material.STAINED_GLASS_PANE);
+        is.setDurability((short)5);
+        meta.setDisplayName("§a§l完了");
+        is.setItemMeta(meta);
+        inv.setItem(46,is);
+        inv.setItem(47,is);
 
+        is.setDurability((short)14);
+        meta.setDisplayName("§4§l取引中止");
+        is.setItemMeta(meta);
+        inv.setItem(48,is);
+        inv.setItem(49,is);
+
+        is.setDurability((short)1);
+        meta.setDisplayName("§l相手は取引完了していません");
+        is.setItemMeta(meta);
+        inv.setItem(51,is);
+        inv.setItem(52,is);
+        inv.setItem(53,is);
+        inv.setItem(54,is);
+
+
+        is.setType(Material.BLAZE_POWDER);
+        meta.setDisplayName("§a§l+10,000$");
+        is.setItemMeta(meta);
+        inv.setItem(40,is);
+
+        is.setType(Material.INK_SACK);
+        is.setDurability((short)10);
+        meta.setDisplayName("§a§l+100,000$");
+        is.setItemMeta(meta);
+        inv.setItem(39,is);
+
+        is.setType(Material.INK_SACK);
+        is.setDurability((short)7);
+        meta.setDisplayName("§a§l+1,000,000$");
+        is.setItemMeta(meta);
+        inv.setItem(38,is);
+
+        is.setType(Material.INK_SACK);
+        is.setDurability((short)8);
+        meta.setDisplayName("§a§l+10,000,000$");
+        is.setItemMeta(meta);
+        inv.setItem(37,is);
+
+
+        is.setType(Material.SIGN);
+        meta.setDisplayName("§lあなたが支払う金額:§e§l0$");
+        is.setItemMeta(meta);
+        inv.setItem(43,is);
+
+        meta.setDisplayName("§l相手が支払う金額：§e§l0$");
+        is.setItemMeta(meta);
+        inv.setItem(44,is);
+
+        meta.setDisplayName(p2.getName());
+        inv.setItem(45,is);
         p1.openInventory(inv);
+
+        meta.setDisplayName(p1.getName());
+        inv.setItem(45,is);
+
         p2.openInventory(inv);
 
     }

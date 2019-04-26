@@ -48,7 +48,7 @@ public final class Man10Delivery extends JavaPlugin {
         ac = new AutoCheck(this);
         ac.start();
         getServer().getPluginManager().registerEvents(event, this);
-        getServer().getPluginManager().registerEvents(new Man10TradeEvent(),this);
+        getServer().getPluginManager().registerEvents(new Man10TradeEvent(this),this);
     }
 
     @Override

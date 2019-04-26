@@ -1,6 +1,5 @@
 package red.man10.man10delivery;
 
-import com.sun.source.tree.ArrayAccessTree;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;

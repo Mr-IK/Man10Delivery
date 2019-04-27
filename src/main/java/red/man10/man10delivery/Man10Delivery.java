@@ -16,6 +16,7 @@ public final class Man10Delivery extends JavaPlugin {
     MySQLManager mysql;
     FileConfiguration config;
     MDVEvent event;
+    Man10TradeCommand cmd;
     AutoCheck ac;
     HashMap<UUID,UUID> pstats = new HashMap<>();
     HashMap<UUID,Double> pstats2 = new HashMap<>();
@@ -42,8 +43,9 @@ public final class Man10Delivery extends JavaPlugin {
         getCommand("mdv").setExecutor(new MDVCommand(this));
         getCommand("mdvlog").setExecutor(new LogCommand(this));
         getCommand("mletter").setExecutor(new MletterCommand(this));
-        getCommand("mtrade").setExecutor(new Man10TradeCommand(this));
-        getCommand("trade").setExecutor(new Man10TradeCommand(this));
+        cmd = new Man10TradeCommand(this);
+        getCommand("mtrade").setExecutor(cmd);
+        getCommand("trade").setExecutor(cmd);
         event = new MDVEvent(this);
         ac = new AutoCheck(this);
         ac.start();

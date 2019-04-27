@@ -1,5 +1,6 @@
 package red.man10.man10delivery
 
+import javafx.beans.binding.When
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.Command
@@ -11,7 +12,10 @@ import org.bukkit.inventory.ItemStack
 import java.util.ArrayList
 
 class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
-    private val tradePair = ArrayList<Pair<Player,Player>>()
+    val tradePair = ArrayList<Pair<Player, Player>>()
+    val sendMoney = HashMap<Player, Int>()
+    val isFinished = HashMap<Player, Boolean>()
+    val sendItem = HashMap<Player,ArrayList<ItemStack>>()
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
 
@@ -41,8 +45,8 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
 
         if (args[0] == "accept") {
             for (player in tradePair) {
-                if (player == sender){
-                    openInventory(player.first,player.second)
+                if (player == sender) {
+                    openInventory(player.first, player.second)
                     return true
                 }
             }
@@ -56,8 +60,8 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
             return true
         }
         for (player in tradePair) {
-            if (player == sender){
-                sender.sendMessage(plugin.prefix+"§eあなたは既に他のプレイヤーにトレード申請をしています")
+            if (player == sender) {
+                sender.sendMessage(plugin.prefix + "§eあなたは既に他のプレイヤーにトレード申請をしています")
             }
         }
 
@@ -69,7 +73,7 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
 
     private fun checkTrade(p: Player, pair: Player) {
 
-        tradePair.add(Pair(pair,p))
+        tradePair.add(Pair(pair, p))
 
         Bukkit.getScheduler().runTask(plugin) {
 
@@ -167,4 +171,105 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
         p2.openInventory(inv)
 
     }
+
+    fun addMoney(player: Player, level: Int) {
+        when (level) {
+            37 -> {
+                if (plugin.vault.getBalance(player.uniqueId) <= 10000) return
+                sendMoney[player]!!.plus(10000)
+            }
+            38 -> {
+                if (plugin.vault.getBalance(player.uniqueId) <= 100000) return
+                sendMoney[player]!!.plus(100000)
+            }
+            39 -> {
+                if (plugin.vault.getBalance(player.uniqueId) <= 1000000) return
+                sendMoney[player]!!.plus(1000000)
+            }
+            40 -> {
+                if (plugin.vault.getBalance(player.uniqueId) <= 10000000) return
+                sendMoney[player]!!.plus(10000000)
+            }
+        }
+
+        var i = player.inventory
+        val stack = ItemStack(Material.SIGN)
+        val meta = stack.itemMeta
+        meta.displayName = "§lあなたが支払う金額:§e§l${sendMoney[player]}$"
+        stack.itemMeta = meta
+
+        i.setItem(43,stack)
+        player.openInventory(i)
+
+        i = getPair(player).inventory
+        meta.displayName = "§l相手が支払う金額：§e§l${sendMoney[player]}$"
+        stack.itemMeta = meta
+        i.setItem(44,stack)
+
+        getPair(player).openInventory(i)
+
+
+    }
+
+    fun clickFinish(player: Player){
+        isFinished[player] = true
+
+        val inv = getPair(player).inventory
+        val stack = ItemStack(Material.STAINED_GLASS_PANE,1,5)
+        val meta = stack.itemMeta
+        meta.displayName = "§a§l相手は完了を押しました"
+        stack.itemMeta = meta
+        inv.setItem(51,stack)
+        inv.setItem(52,stack)
+        inv.setItem(53,stack)
+        inv.setItem(54,stack)
+
+    }
+
+    fun addItem(player: Player,send:ItemStack){
+        sendItem[player]!!.add(send)
+
+        val inv = getPair(player).inventory
+        inv.addItem()
+    }
+
+    fun removeItem(player: Player,remove:ItemStack){
+        sendItem[player]!!.remove(remove)
+
+        val inv = getPair(player).inventory
+        inv.remove(remove)
+    }
+
+    fun finish(player: Player){
+        val pair = getPair(player)
+
+        player.closeInventory()
+        pair.closeInventory()
+
+        isFinished.remove(player)
+        isFinished.remove(pair)
+
+        for (i in sendItem[player]!!){
+            getPair(player).inventory.addItem(i)
+        }
+        for (i in sendItem[pair]!!){
+            player.inventory.addItem(i)
+        }
+        sendItem.remove(player)
+        sendItem.remove(pair)
+        plugin.vault.givePlayerMoney(player.uniqueId,sendMoney[pair]!!.toDouble(),null,"mtrade")
+        plugin.vault.givePlayerMoney(getPair(player).uniqueId,sendMoney[pair]!!.toDouble(),null,"mtrade")
+
+        sendMoney.remove(player)
+        sendMoney.remove(pair)
+
+        tradePair.remove(Pair(player,pair))
+    }
+
+
+
+    fun getPair(p:Player):Player{
+        return Bukkit.getPlayer(p.inventory.getItem(45).itemMeta.displayName)
+    }
+
 }

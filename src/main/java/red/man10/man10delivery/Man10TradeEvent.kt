@@ -17,28 +17,36 @@ class Man10TradeEvent(internal var plugin: Man10Delivery) : Listener {
         if (e.inventory.name == "§e§lトレード") {
             e.isCancelled = true
 
-            if (e.slot == 46 || e.slot == 47) {
-                val `is` = ItemStack(Material.STAINED_GLASS_PANE, 1, 4.toShort())
-                val meta = `is`.itemMeta
-                meta.displayName = "あなたは取引完了しています"
-                `is`.itemMeta = meta
+            val player = e.whoClicked as Player
 
-                val i = e.inventory
-                i.setItem(46, `is`)
-                i.setItem(47, `is`)
-                i.setItem(48, `is`)
-                i.setItem(49, `is`)
-
-                e.whoClicked.openInventory(i)
-                return
+            ///////////////////
+            //取引完了
+            ////////////////
+            if (e.slot in 46..47) {
+                if (plugin.cmd.isFinished[player]!!){
+                    return
+                }
+                plugin.cmd.clickFinish(player)
+            }
+            ///////////////////
+            //取引中止
+            ////////////////
+            if (e.slot == 48 || e.slot == 49) {
             }
 
+            ////////////////////
+            //値段指定
+            /////////////////////
+            if(e.slot in 37..40){
+                plugin.cmd.addMoney(player,e.slot)
+            }
 
 
             Bukkit.getLogger().info("clicked")
 
         }
     }
+
 
 
 }

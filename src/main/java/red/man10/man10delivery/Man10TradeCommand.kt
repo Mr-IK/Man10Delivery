@@ -73,6 +73,10 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
 
     private fun checkTrade(p: Player, pair: Player) {
 
+        if (p == pair){
+            pair.sendMessage(plugin.prefix + "自分とトレードはできません")
+        }
+
         tradePair.add(Pair(pair, p))
 
         Bukkit.getScheduler().runTask(plugin) {
@@ -230,7 +234,8 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
         sendItem[player]!!.add(send)
 
         val inv = getPair(player).inventory
-        inv.addItem()
+        inv.addItem(send)
+        getPair(player).openInventory(inv)
     }
 
     fun removeItem(player: Player,remove:ItemStack){
@@ -238,6 +243,7 @@ class Man10TradeCommand(internal var plugin: Man10Delivery) : CommandExecutor {
 
         val inv = getPair(player).inventory
         inv.remove(remove)
+        getPair(player).openInventory(inv)
     }
 
     fun finish(player: Player){
